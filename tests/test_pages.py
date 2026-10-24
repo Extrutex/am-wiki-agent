@@ -11,6 +11,7 @@ class Seite(unittest.TestCase):
             out = build_pages.build(Path(d) / "site")
             self.assertTrue((out / "index.html").is_file())
             self.assertTrue((out / ".nojekyll").is_file())
+            self.assertTrue(any(out.glob("google*.html")))
             for lang in ("de", "en"):
                 seite = (out / lang / "klipper-makros-jinja2.html").read_text(encoding="utf-8")
                 self.assertIn("gcode_macro", seite)
