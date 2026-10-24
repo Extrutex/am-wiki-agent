@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "hinweis": "Quellenregister. Enthaelt nur Verweise, keine Inhalte. Abgerufene Daten liegen getrennt in knowledge-base/fetched/.",
+  "allowed_hosts": ["api.github.com", "github.com", "www.klipper3d.org", "docs.duet3d.com", "marlinfw.org", "wiki.bambulab.com"],
+  "sources": [
+    {"id": "klipper-docs", "topic": "klipper", "type": "website", "url": "https://www.klipper3d.org/", "owner": "Klipper3d", "agent": "firmware"},
+    {"id": "klipper-releases", "topic": "klipper", "type": "github_releases", "repo": "Klipper3d/klipper", "url": "https://github.com/Klipper3d/klipper", "owner": "Klipper3d", "agent": "firmware"},
+    {"id": "rrf-docs", "topic": "reprapfirmware", "type": "website", "url": "https://docs.duet3d.com/", "owner": "Duet3D", "agent": "firmware"},
+    {"id": "rrf-releases", "topic": "reprapfirmware", "type": "github_releases", "repo": "Duet3D/RepRapFirmware", "url": "https://github.com/Duet3D/RepRapFirmware", "owner": "Duet3D", "agent": "firmware"},
+    {"id": "marlin-docs", "topic": "marlin", "type": "website", "url": "https://marlinfw.org/", "owner": "MarlinFirmware", "agent": "firmware"},
+    {"id": "marlin-releases", "topic": "marlin", "type": "github_releases", "repo": "MarlinFirmware/Marlin", "url": "https://github.com/MarlinFirmware/Marlin", "owner": "MarlinFirmware", "agent": "firmware"},
+    {"id": "bambu-wiki", "topic": "bambu", "type": "website", "url": "https://wiki.bambulab.com/", "owner": "Bambu Lab", "agent": "hardware"},
+    {"id": "bambu-studio-releases", "topic": "bambu", "type": "github_releases", "repo": "bambulab/BambuStudio", "url": "https://github.com/bambulab/BambuStudio", "owner": "Bambu Lab", "agent": "hardware"},
+    {"id": "klipper-toolchanger-releases", "topic": "toolchanger", "type": "github_releases", "repo": "viesturz/klipper-toolchanger", "url": "https://github.com/viesturz/klipper-toolchanger", "owner": "viesturz", "agent": "hardware"}
+  ]
+}

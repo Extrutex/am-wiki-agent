@@ -1,0 +1,21 @@
+{
+  "spec_version": "0.1.0",
+  "beschreibung": "Spezifikation der AM-Spezialisten. Trennt bestaetigte Erkenntnisse (nur mit Quelle und Abruf) von Beispieldaten (nur Demo).",
+  "datenklassen": {
+    "bestaetigt": "Nur Aussagen mit source_id aus knowledge-base/sources.json und einem Abruf unter knowledge-base/fetched/.",
+    "beispiel": "Erfundene Demodaten fuer Oberflaeche und Tests. Immer als Beispiel gekennzeichnet, nie als Fakt verwenden."
+  },
+  "sicherheitsgrenzen": [
+    "keine automatischen Firmware-Updates",
+    "keine Druckerbefehle",
+    "keine Zahlungen",
+    "keine automatische Veroeffentlichung"
+  ],
+  "agents": [
+    {"id": "koordinator", "datei": "agents/koordinator.md", "zustaendig_fuer": ["Aufgabenverteilung", "Uebergaben", "Zusammenfuehrung"], "quellen": [], "uebergabe_an": ["firmware", "hardware", "quellenpruefung", "b2b"]},
+    {"id": "firmware", "datei": "agents/firmware.md", "zustaendig_fuer": ["Klipper", "RepRapFirmware", "Marlin"], "quellen": ["klipper-docs", "klipper-releases", "rrf-docs", "rrf-releases", "marlin-docs", "marlin-releases"], "uebergabe_an": ["quellenpruefung"]},
+    {"id": "hardware", "datei": "agents/hardware.md", "zustaendig_fuer": ["Toolchanger", "Bambu", "Hardware-Kompatibilitaet"], "quellen": ["bambu-wiki", "bambu-studio-releases", "klipper-toolchanger-releases"], "uebergabe_an": ["quellenpruefung"]},
+    {"id": "quellenpruefung", "datei": "agents/quellenpruefung.md", "zustaendig_fuer": ["Quellen, Abrufzeit und Pruefsumme kontrollieren", "Behauptungen als bestaetigt oder offen einstufen"], "quellen": [], "uebergabe_an": ["koordinator", "b2b"]},
+    {"id": "b2b", "datei": "agents/b2b.md", "zustaendig_fuer": ["B2B-Beratung", "Angebotsvorbereitung (nur Entwurf)"], "quellen": [], "uebergabe_an": ["koordinator"]}
+  ]
+}

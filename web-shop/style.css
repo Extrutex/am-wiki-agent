@@ -1,0 +1,10 @@
+body{font-family:system-ui,sans-serif;margin:0;line-height:1.5;color:#1b1b1b;background:#fafafa}
+header,main{max-width:46rem;margin:0 auto;padding:1rem}
+.demo{background:#fff3cd;border:1px solid #e0c36a;padding:.5rem .75rem;border-radius:4px}
+section{margin:1.5rem 0}
+label{display:block;margin:.5rem 0}
+input,textarea{width:100%;box-sizing:border-box;padding:.4rem}
+button{padding:.4rem .9rem;margin-top:.4rem}
+li{margin:.3rem 0}
+.msg{margin:.4rem 0;padding:.4rem .6rem;background:#eef;border-radius:4px}
+.tag{font-size:.8em;color:#7a5b00}
