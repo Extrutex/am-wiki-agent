@@ -1,6 +1,6 @@
 # AM-Plattform-Workspace
 
-Recherche-Gerüst, Spezialisten-Spezifikation und Demo-Shop für Additive Fertigung (Firmware, Toolchanger, B2B).
+Next-Gen-Wiki mit Chat-Agent für 3D-Druck (Klipper, Marlin, Bambu Lab, Prusa, Tuning, später alle Verfahren). Jede Aussage hat eine Quelle, Beispiele sind getestet. Der Chat-Agent (FastAPI + Claude API) ist geplant, aber noch nicht gebaut.
 
 ## Inhalt
 | Pfad | Zweck |
@@ -11,14 +11,18 @@ Recherche-Gerüst, Spezialisten-Spezifikation und Demo-Shop für Additive Fertig
 | `agents/` | Koordinator, Firmware, Hardware/Toolchanger, Quellenprüfung, B2B. |
 | `knowledge-base/sources.json` | Quellenregister (Klipper, RepRapFirmware, Marlin, Bambu, Toolchanger). |
 | `knowledge-base/fetched/` | Echte Abrufe, getrennt vom Register. |
-| `web-shop/` | Statische Demo-Oberfläche (GitHub-Pages-fähig, ohne Build). `API.md` beschreibt die spätere Schnittstelle. |
+| `wiki/de`, `wiki/en` | Zweisprachige Artikel mit Kopfdaten (Quellen, Status, Prüfdatum). Erstes Kapitel: `klipper/makros-jinja2`. |
+| `wiki/beispiele/` | Getestete Beispieldateien, die in den Artikeln eingebettet sind. |
+| `klipper_macro_check.py` | Lint und Test-Rendering von Klipper-Makros mit Klippers Jinja2-Einstellungen (nur Rendern). |
+| `wiki_tools.py` | Prüft Artikel: Quellen, Abrufe, Beispiele, de/en-Paare. |
 | `tests/`, `.github/workflows/` | Offline-Tests und Actions. |
 
 ## Benutzung
-Nur Python 3 (Standardbibliothek), keine Installation nötig.
+Python 3; für Makro-Tests wird Jinja2 gebraucht.
 ```
-python3 am_validate.py                     # Register + Spezifikation prüfen
-python3 -m unittest discover -s tests -t . # Offline-Tests
+python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
+.venv/bin/python am_validate.py                       # Register, Spezifikation, Wiki prüfen
+.venv/bin/python -m unittest discover -s tests -t .   # Offline-Tests
 python3 am_research_builder.py --list      # Quellen anzeigen
 python3 am_research_builder.py --only klipper-releases   # echter Abruf
 ```
@@ -29,7 +33,13 @@ Neue Quelle: Eintrag in `knowledge-base/sources.json` (Host in `allowed_hosts` e
 
 ## Datenklassen
 - `bestaetigt`: nur mit Quelle und Abruf.
-- `beispiel`: Demodaten, nie als Fakt verwenden. Alle Shop-Inhalte sind Beispiele.
+- `beispiel`: Demodaten, nie als Fakt verwenden.
+
+## Wiki-Regeln
+- Artikel werden neu aus Primärquellen geschrieben. Fremde Guides werden nicht kopiert.
+- Status `bestaetigt` nur mit Quelle und Abruf unter `knowledge-base/fetched/`.
+- Jeder Artikel existiert in `de` und `en` mit gleichen Quellen und Beispielen.
+- Codeblöcke mit `<!-- beispiel: datei -->` müssen mit der Datei in `wiki/beispiele/` übereinstimmen.
 
 ## Sicherheit
-Keine automatischen Firmware-Updates, Druckerbefehle, Zahlungen oder Veröffentlichungen. Das Skript liest nur, Workflows haben nur `contents: read`, die Shop-Seite sendet nichts.
+Keine automatischen Firmware-Updates, Druckerbefehle, Zahlungen oder Veröffentlichungen. Das Skript liest nur, Makros werden nur gerendert, Workflows haben nur `contents: read`.

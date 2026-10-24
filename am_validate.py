@@ -2,6 +2,8 @@
 """Offline-Validierung von Spezifikation und Quellenregister."""
 import json
 import sys
+
+import wiki_tools
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -46,6 +48,7 @@ def validate(root=ROOT):
             errors.append(f"{s['id']}: unbekannter Agent {s.get('agent')}")
     if set(spec.get("datenklassen", {})) != {"bestaetigt", "beispiel"}:
         errors.append("datenklassen muss genau 'bestaetigt' und 'beispiel' enthalten")
+    errors += wiki_tools.validate(root)
     return errors
 
 

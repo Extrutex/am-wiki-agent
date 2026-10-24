@@ -54,14 +54,5 @@ class Builder(unittest.TestCase):
             self.assertNotIn(verboten, src)
 
 
-class Shop(unittest.TestCase):
-    def test_demo_gekennzeichnet(self):
-        html = (ROOT / "web-shop" / "index.html").read_text()
-        self.assertIn("DEMO", html)
-        js = (ROOT / "web-shop" / "app.js").read_text()
-        self.assertNotIn("fetch(", js)
-        self.assertNotIn("XMLHttpRequest", js)
-
-
 if __name__ == "__main__":
     unittest.main()
