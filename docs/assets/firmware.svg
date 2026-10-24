@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" role="img" aria-label="Abgedeckte Firmware: Klipper (Kapitel 1 fertig), RepRapFirmware, Marlin, Bambu Lab und Prusa in Planung">
+  <style>.t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}</style>
+  <rect width="1200" height="120" rx="18" fill="#07090f"/>
+  <rect x="1.5" y="1.5" width="1197" height="117" rx="17" fill="none" stroke="#78a0ff" stroke-opacity=".25" stroke-width="3"/>
+  <g class="t" text-anchor="middle">
+    <rect x="30" y="26" width="206" height="68" rx="16" fill="#5eead4" fill-opacity=".13" stroke="#5eead4"/><text x="133" y="56" font-size="24" font-weight="800" fill="#5eead4">Klipper</text><text x="133" y="80" font-size="15" fill="#8b97b3">Kapitel 1 fertig</text>
+    <rect x="256" y="26" width="206" height="68" rx="16" fill="#818cf8" fill-opacity=".08" stroke="#818cf8" stroke-opacity=".5" stroke-dasharray="6 5"/><text x="359" y="56" font-size="21" font-weight="800" fill="#a5b0ff">RepRapFirmware</text><text x="359" y="80" font-size="15" fill="#8b97b3">geplant</text>
+    <rect x="482" y="26" width="206" height="68" rx="16" fill="#818cf8" fill-opacity=".08" stroke="#818cf8" stroke-opacity=".5" stroke-dasharray="6 5"/><text x="585" y="56" font-size="24" font-weight="800" fill="#a5b0ff">Marlin</text><text x="585" y="80" font-size="15" fill="#8b97b3">geplant</text>
+    <rect x="708" y="26" width="206" height="68" rx="16" fill="#818cf8" fill-opacity=".08" stroke="#818cf8" stroke-opacity=".5" stroke-dasharray="6 5"/><text x="811" y="56" font-size="24" font-weight="800" fill="#a5b0ff">Bambu Lab</text><text x="811" y="80" font-size="15" fill="#8b97b3">geplant</text>
+    <rect x="934" y="26" width="236" height="68" rx="16" fill="#818cf8" fill-opacity=".08" stroke="#818cf8" stroke-opacity=".5" stroke-dasharray="6 5"/><text x="1052" y="56" font-size="24" font-weight="800" fill="#a5b0ff">Prusa &amp; mehr</text><text x="1052" y="80" font-size="15" fill="#8b97b3">später</text>
+  </g>
+</svg>

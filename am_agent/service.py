@@ -73,6 +73,14 @@ PINS_FREI = {
 CITE = re.compile(r"\[([a-z0-9-]+#[^\]]+)\]")
 
 
+def _nutzung(resp, summe):
+    u = getattr(resp, "usage", None)
+    if u is None:
+        return
+    summe["input"] += sum(int(getattr(u, k, 0) or 0) for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"))
+    summe["output"] += int(getattr(u, "output_tokens", 0) or 0)
+
+
 class Agent:
     def __init__(self, client, root=ROOT, model=MODEL):
         self.client, self.root, self.model = client, Path(root), model
@@ -100,8 +108,10 @@ class Agent:
             raise ValueError(f"frage muss 1 bis {MAX_FRAGE} Zeichen lang sein")
         chunks = self._index(lang).search(frage)
         if not chunks:
-            return {"antwort": NICHT_BELEGT[lang], "daten_klasse": "nicht_belegt", "zitate": [], "warnungen": []}
+            return {"antwort": NICHT_BELEGT[lang], "daten_klasse": "nicht_belegt", "zitate": [], "warnungen": [],
+                    "nutzung": {"input": 0, "output": 0}}
         kontext = "\n\n".join(f"<abschnitt schluessel=\"{c.key}\" status=\"{c.status}\">\n{c.text}\n</abschnitt>" for c in chunks)
+        nutzung = {"input": 0, "output": 0}
         resp = (client or self.client).messages.create(
             model=self.model,
             max_tokens=4096,
@@ -109,9 +119,10 @@ class Agent:
             system=[{"type": "text", "text": SYSTEM[lang], "cache_control": {"type": "ephemeral"}}],
             messages=[{"role": "user", "content": f"<wiki_abschnitte>\n{kontext}\n</wiki_abschnitte>\n\nFrage: {frage}"}],
         )
+        _nutzung(resp, nutzung)
         if resp.stop_reason == "refusal":
             return {"antwort": NICHT_BELEGT[lang], "daten_klasse": "nicht_belegt", "zitate": [],
-                    "warnungen": ["Die Anfrage wurde vom Modell abgelehnt."]}
+                    "warnungen": ["Die Anfrage wurde vom Modell abgelehnt."], "nutzung": nutzung}
         text = "".join(b.text for b in resp.content if b.type == "text").strip()
         by_key = {c.key: c for c in chunks}
         cited = list(dict.fromkeys(CITE.findall(text)))
@@ -125,7 +136,7 @@ class Agent:
         zitate = [{"schluessel": k, "titel": by_key[k].titel, "status": by_key[k].status,
                    "quellen": self._abrufe(by_key[k].quellen)} for k in valid]
         return {"antwort": text, "daten_klasse": "bestaetigt" if bestaetigt else "offen",
-                "zitate": zitate, "warnungen": warnungen}
+                "zitate": zitate, "warnungen": warnungen, "nutzung": nutzung}
 
     def edit_cfg(self, wunsch, cfg, lang="de", pin_freigabe=False, pin_bestaetigung="", client=None):
         """Aenderungsvorschlag fuer eine printer.cfg. Pin-Aenderungen nur mit Freigabe und Bestaetigungssatz."""
@@ -142,21 +153,24 @@ class Agent:
         chunks = self._index(lang).search(wunsch)
         if not chunks:
             return {"antwort": NICHT_BELEGT[lang], "daten_klasse": "nicht_belegt", "zitate": [], "warnungen": [],
-                    "cfg_neu": None, "diff": "", "pin_aenderungen": [], "blockiert": False}
+                    "cfg_neu": None, "diff": "", "pin_aenderungen": [], "blockiert": False,
+                    "nutzung": {"input": 0, "output": 0}}
         kontext = "\n\n".join(f"<abschnitt schluessel=\"{c.key}\" status=\"{c.status}\">\n{c.text}\n</abschnitt>" for c in chunks)
         system = CFG_REGELN[lang].format(pins=(PINS_FREI if frei else PINS_GESPERRT)[lang])
         nachrichten = [{"role": "user", "content": (
             f"<wiki_abschnitte>\n{kontext}\n</wiki_abschnitte>\n\n<aktuelle_printer_cfg>\n{cfg}\n</aktuelle_printer_cfg>\n\nWunsch: {wunsch}")}]
         warnungen, neu, text, aend = [], None, "", []
+        nutzung = {"input": 0, "output": 0}
         for versuch in range(2):
             resp = (client or self.client).messages.create(
                 model=self.model, max_tokens=16000, output_config={"effort": "medium"},
                 system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
                 messages=nachrichten)
+            _nutzung(resp, nutzung)
             if resp.stop_reason == "refusal":
                 return {"antwort": NICHT_BELEGT[lang], "daten_klasse": "nicht_belegt", "zitate": [], "cfg_neu": None,
                         "warnungen": ["Die Anfrage wurde vom Modell abgelehnt."], "diff": "", "pin_aenderungen": [],
-                        "blockiert": False}
+                        "blockiert": False, "nutzung": nutzung}
             text = "".join(b.text for b in resp.content if b.type == "text").strip()
             m = CFG_BLOCK.search(text)
             if resp.stop_reason == "max_tokens" or not m:
@@ -189,4 +203,5 @@ class Agent:
                 and all(by_key[k].status == "bestaetigt" for k in valid) else "offen",
                 "zitate": zitate, "warnungen": warnungen, "cfg_neu": neu if ok else None,
                 "diff": cfg_guard.diff(cfg, neu) if ok else "",
-                "pin_aenderungen": [a.als_dict() for a in aend], "pin_freigabe": frei, "blockiert": blockiert}
+                "pin_aenderungen": [a.als_dict() for a in aend], "pin_freigabe": frei, "blockiert": blockiert,
+                "nutzung": nutzung}

@@ -100,7 +100,7 @@ class Server(unittest.TestCase):
         self.http = TestClient(create_app(self.fake, ROOT))
 
     def test_health_und_ask(self):
-        self.assertEqual(self.http.get("/api/health").json(), {"status": "ok"})
+        self.assertEqual(self.http.get("/api/health").json(), {"status": "ok", "kontingent": "frei"})
         r = self.http.post("/api/ask", json={"frage": Antwort.FRAGE, "sprache": "de"})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()["daten_klasse"], "bestaetigt")
