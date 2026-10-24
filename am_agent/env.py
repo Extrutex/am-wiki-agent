@@ -1,4 +1,4 @@
-"""Minimaler .env-Lader (ohne Abhaengigkeit). Bereits gesetzte Umgebungsvariablen gewinnen."""
+"""Minimaler .env-Lader (ohne Abhängigkeit). Bereits gesetzte Umgebungsvariablen gewinnen."""
 import os
 from pathlib import Path
 

@@ -15,7 +15,7 @@ jobs:
           python-version: "3.12"
       - run: python am_research_builder.py
         continue-on-error: true
-      # Ergebnis nur als Artefakt, kein Commit, keine Veroeffentlichung.
+      # Ergebnis nur als Artefakt, kein Commit, keine Veröffentlichung.
       - uses: actions/upload-artifact@v4
         with:
           name: recherche

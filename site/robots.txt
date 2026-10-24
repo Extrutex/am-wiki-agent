@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://extrutex.github.io/am-wiki-agent/sitemap.xml

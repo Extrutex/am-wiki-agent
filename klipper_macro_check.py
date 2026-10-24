@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline-Pruefung und Test-Rendering von Klipper-Makros (gcode_macro).
+"""Offline-Prüfung und Test-Rendering von Klipper-Makros (gcode_macro).
 
 Bildet Klippers Jinja2-Umgebung nach (klippy/extras/gcode_macro.py):
 jinja2.Environment('{%', '%}', '{', '}') ohne Extensions. Nur Rendern, nichts
@@ -32,7 +32,7 @@ def macro_sections(cp):
 
 
 def lint(text):
-    """Gibt eine Liste von Befunden (Strings) zurueck."""
+    """Gibt eine Liste von Befunden (Strings) zurück."""
     problems = []
     cp = parse_cfg(text)
     for sec in macro_sections(cp):
@@ -56,14 +56,14 @@ def lint(text):
                     ast.literal_eval(val)
                 except (ValueError, SyntaxError) as exc:
                     problems.append(f"[{sec}]: {opt} ist kein gueltiges Literal: {exc}")
-    # Klipper verlangt Kleinbuchstaben in Variablennamen; configparser wuerde sie still klein machen.
+    # Klipper verlangt Kleinbuchstaben in Variablennamen; configparser würde sie still klein machen.
     for m in re.finditer(r"^(variable_\w*[A-Z]\w*)\s*[:=]", text, re.M):
         problems.append(f"{m.group(1)}: Variablennamen nur in Kleinbuchstaben")
     return problems
 
 
 def render(text, name, params=None, printer=None):
-    """Rendert Makro `name`. Gibt (G-Code-Zeilen, Meldungen) zurueck."""
+    """Rendert Makro `name`. Gibt (G-Code-Zeilen, Meldungen) zurück."""
     cp = parse_cfg(text)
     sec = next((s for s in macro_sections(cp)
                 if len(s.split()) == 2 and s.split()[1].upper() == name.upper()), None)

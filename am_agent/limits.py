@@ -1,8 +1,8 @@
-"""Nutzungsgrenzen fuer den Server-Schluessel: Rate-Limit pro IP und Tagesbudget an Tokens.
+"""Nutzungsgrenzen für den Server-Schlüssel: Rate-Limit pro IP und Tagesbudget an Tokens.
 
-Gespeichert werden nur Zaehler (Tag, Anfragen, Tokens), nie Fragen, Schluessel oder IPs.
-Anfragen mit eigenem Nutzer-Schluessel zaehlen nicht, die bezahlt der Nutzer.
-Ein einzelner Aufruf kann das Budget um seine eigene Groesse ueberschreiten (Pruefung vorher, Buchung nachher).
+Gespeichert werden nur Zähler (Tag, Anfragen, Tokens), nie Fragen, Schlüssel oder IPs.
+Anfragen mit eigenem Nutzer-Schlüssel zählen nicht, die bezahlt der Nutzer.
+Ein einzelner Aufruf kann das Budget um seine eigene Größe überschreiten (Prüfung vorher, Buchung nachher).
 """
 import json
 import os
@@ -77,7 +77,7 @@ class Limits:
         return self.tokens_heute() < self.tagesbudget
 
     def pruefen(self, ip):
-        """Wirft Gesperrt, sonst zaehlt die Anfrage fuer diese IP."""
+        """Wirft Gesperrt, sonst zählt die Anfrage für diese IP."""
         jetzt = self.uhr()
         with self.lock:
             self._tageswechsel(jetzt)

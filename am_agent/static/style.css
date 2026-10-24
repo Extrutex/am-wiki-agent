@@ -17,7 +17,7 @@ main,#schluessel{max-width:64rem;margin:0 auto 1rem;padding:0 1rem}
 @media(max-width:760px){.tab{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:1rem;padding:1rem 1.1rem;backdrop-filter:blur(10px);box-shadow:0 10px 40px rgba(0,0,0,.35);transition:transform .15s ease,border-color .2s;transform:perspective(900px) rotateX(var(--rx,0)) rotateY(var(--ry,0))}
 .card:hover{border-color:rgba(94,234,212,.4)}
-#schluessel{background:var(--card);border:1px solid var(--line);border-radius:1rem;max-width:calc(64rem - 2rem);padding:.7rem 1.1rem}
+#schlüssel{background:var(--card);border:1px solid var(--line);border-radius:1rem;max-width:calc(64rem - 2rem);padding:.7rem 1.1rem}
 summary{cursor:pointer;color:var(--mut)}
 input,textarea,select{width:100%;background:rgba(5,8,14,.7);color:var(--fg);border:1px solid var(--line);border-radius:.6rem;padding:.55rem .7rem;font:inherit}
 textarea{resize:vertical;font-family:ui-monospace,Menlo,monospace;font-size:.9rem}
