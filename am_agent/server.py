@@ -1,13 +1,16 @@
 """FastAPI-Server: Chat-API und Wiki-Anzeige. Start: uvicorn am_agent.server:app"""
 from pathlib import Path
 
-from fastapi import FastAPI, Header, HTTPException
+import os
+
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import wiki_tools
 from am_agent.env import load_env
+from am_agent.limits import Gesperrt, Limits
 from am_agent.service import Agent, ROOT
 
 load_env(ROOT / ".env")  # Schluessel nur aus der Umgebung/.env, nie aus dem Browser
@@ -28,8 +31,9 @@ class CfgWunsch(BaseModel):
     pin_bestaetigung: str = ""
 
 
-def create_app(client=None, root=ROOT):
+def create_app(client=None, root=ROOT, limits=None):
     app = FastAPI(title="AM-Wiki-Agent")
+    limits = limits or Limits.from_env()
     holder = {"agent": None}
 
     def agent(eigener=None):
@@ -50,16 +54,34 @@ def create_app(client=None, root=ROOT):
 
     @app.get("/api/health")
     def health():
-        return {"status": "ok"}
+        return {"status": "ok", "kontingent": "frei" if limits.frei() else "leer"}
 
-    def aufruf(x_anthropic_key, fn):
+    def client_ip(request):
+        # Hinter einem Proxy zaehlt nur dessen X-Forwarded-For, wenn AM_TRUST_PROXY=1 gesetzt ist.
+        if os.environ.get("AM_TRUST_PROXY") == "1":
+            fwd = request.headers.get("x-forwarded-for", "").split(",")[-1].strip()
+            if fwd:
+                return fwd
+        return request.client.host if request.client else "unbekannt"
+
+    def aufruf(request, x_anthropic_key, fn):
         # Eigener Schluessel des Nutzers: gilt nur fuer diese Anfrage, wird weder gespeichert noch geloggt.
         eigener = None
+        if not x_anthropic_key:  # Server-Schluessel: Limits gelten, Kosten tragen wir
+            try:
+                limits.pruefen(client_ip(request))
+            except Gesperrt as g:
+                kopf = {"Retry-After": str(g.warte_s)} if g.warte_s else None
+                raise HTTPException(429, g.grund, headers=kopf) from None
         if x_anthropic_key:
             import anthropic
             eigener = anthropic.Anthropic(api_key=x_anthropic_key.strip(), max_retries=1)
         try:
-            return fn(agent(eigener), eigener)
+            out = fn(agent(eigener), eigener)
+            if not x_anthropic_key:
+                n = out.get("nutzung") or {}
+                limits.buchen(n.get("input", 0), n.get("output", 0))
+            return out
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
         except Exception as exc:
@@ -73,12 +95,12 @@ def create_app(client=None, root=ROOT):
             raise HTTPException(502, "Anthropic-Aufruf fehlgeschlagen") from None
 
     @app.post("/api/ask")
-    def ask(body: Frage, x_anthropic_key: str | None = Header(default=None)):
-        return aufruf(x_anthropic_key, lambda a, c: a.ask(body.frage, body.sprache, client=c))
+    def ask(request: Request, body: Frage, x_anthropic_key: str | None = Header(default=None)):
+        return aufruf(request, x_anthropic_key, lambda a, c: a.ask(body.frage, body.sprache, client=c))
 
     @app.post("/api/cfg")
-    def cfg_bearbeiten(body: CfgWunsch, x_anthropic_key: str | None = Header(default=None)):
-        return aufruf(x_anthropic_key, lambda a, c: a.edit_cfg(
+    def cfg_bearbeiten(request: Request, body: CfgWunsch, x_anthropic_key: str | None = Header(default=None)):
+        return aufruf(request, x_anthropic_key, lambda a, c: a.edit_cfg(
             body.wunsch, body.cfg, body.sprache, body.pin_freigabe, body.pin_bestaetigung, client=c))
 
     @app.get("/api/wiki")
@@ -104,4 +126,4 @@ def create_app(client=None, root=ROOT):
     return app
 
 
-app = create_app()
+app = create_app(limits=Limits.from_env(ROOT / ".usage.json"))

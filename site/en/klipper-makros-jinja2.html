@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Klipper macros and Jinja2 – AM-Wiki</title>
+<meta name="description" content="A Klipper macro is a gcode_macro NAME section with a gcode: option. That G-code is evaluated as a Jinja2 template. The whole template is first evaluated to…">
+<link rel="canonical" href="https://extrutex.github.io/am-wiki-agent/en/klipper-makros-jinja2.html">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Klipper macros and Jinja2">
+<meta property="og:description" content="A Klipper macro is a gcode_macro NAME section with a gcode: option. That G-code is evaluated as a Jinja2 template. The whole template is first evaluated to…">
+<meta property="og:url" content="https://extrutex.github.io/am-wiki-agent/en/klipper-makros-jinja2.html">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" hreflang="de" href="https://extrutex.github.io/am-wiki-agent/de/klipper-makros-jinja2.html">
+<link rel="alternate" hreflang="en" href="https://extrutex.github.io/am-wiki-agent/en/klipper-makros-jinja2.html">
+<link rel="alternate" hreflang="x-default" href="https://extrutex.github.io/am-wiki-agent/de/klipper-makros-jinja2.html">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Klipper macros and Jinja2", "inLanguage": "en", "dateModified": "2026-10-24", "url": "https://extrutex.github.io/am-wiki-agent/en/klipper-makros-jinja2.html", "isBasedOn": ["klipper-command-templates", "klipper-gcode-macro-source"]}</script>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div id="glow" aria-hidden="true"></div>
+<header class="bar">
+  <h1><a href="../index.html"><span class="logo">AM</span> Wiki</a></h1>
+  <nav><a href="../index.html#de">Deutsch</a> · <a href="../index.html#en">English</a></nav>
+</header>
+<main style="display:block">
+<article class="card"><p class="meta"><span class="badge bestaetigt">bestaetigt</span> geprüft am 2026-10-24 · Quellen: klipper-command-templates, klipper-gcode-macro-source</p><h1>Klipper macros and Jinja2</h1>
+<h2>Summary</h2>
+<p>A Klipper macro is a <code>[gcode_macro NAME]</code> section with a <code>gcode:</code> option. That G-code is evaluated as a <strong>Jinja2 template</strong>. The whole template is first evaluated to text, and only then does Klipper run the resulting commands. Most pitfalls follow from this order.</p>
+<h2>Structure and names</h2>
+<ul>
+<li>Macro names are case-insensitive. If a name contains digits, they must come at the end (<code>TEST_MACRO25</code> is valid, <code>MACRO25_TEST3</code> is not).</li>
+<li>A section name consists of the type and exactly one name. Klipper rejects whitespace in the name (error "contains illegal whitespace").</li>
+<li><code>gcode:</code> starts at the beginning of the line, all following command lines are indented.</li>
+<li><code>description:</code> is optional (default: "G-Code macro") and shows up in <code>HELP</code> and autocomplete.</li>
+</ul>
+<h2>Saving G-code state</h2>
+<p><code>G0</code>/<code>G1</code> moves depend on the parser state (<code>M82</code>, <code>M83</code>, <code>G90</code>, <code>G91</code>, <code>G92</code>, earlier <code>G1</code>). Set the state explicitly in the macro and wrap it in <code>SAVE_GCODE_STATE</code> / <code>RESTORE_GCODE_STATE</code>. Give the first <code>G1</code> an explicit feed rate <code>F</code>.</p>
+<h2>Jinja2 in Klipper</h2>
+<ul>
+<li><code>{ ... }</code> evaluates an expression, <code>{% ... %}</code> is a statement (<code>if</code>, <code>for</code>, <code>set</code>).</li>
+<li>Klipper creates the environment with <code>jinja2.Environment('{%', '%}', '{', '}')</code> and sets <strong>no</strong> extensions. It follows (Jinja2 behaviour, not stated explicitly in the Klipper text) that <code>{% do ... %}</code> is not available.</li>
+<li>Template comments are <code>{# ... #}</code> (Jinja2 default).</li>
+</ul>
+<h2>Parameters: <code>params</code></h2>
+<p>Call parameters are in <code>params</code>, names in upper case. <strong>Values are always strings.</strong> Convert with <code>|float</code> or <code>|int</code> before doing math, and set defaults with <code>|default(...)</code>.</p>
+<!-- beispiel: klipper/anteil_melden.cfg -->
+
+<pre><code class="language-ini">[gcode_macro ANTEIL_MELDEN]
+description: Zeigt einen Anteil (0.0 bis 1.0) als Prozent an
+gcode:
+    {% set anteil = params.ANTEIL|default(0.5)|float %}
+    M117 Anteil: {(anteil * 100)|int}%
+</code></pre>
+<p>Calling <code>ANTEIL_MELDEN ANTEIL=0.2</code> shows <code>Anteil: 20%</code>. Without a parameter the value is 0.5.</p>
+<!-- beispiel: klipper/bett_vorheizen.cfg -->
+
+<pre><code class="language-ini">[gcode_macro BETT_VORHEIZEN]
+description: Heizt das Bett auf TEMPERATUR (Standard 40) und verweigert unplausible Werte
+gcode:
+    {% set temp = params.TEMPERATUR|default(40)|float %}
+    {% if temp &lt; 0 or temp &gt; 120 %}
+        {action_raise_error(&quot;TEMPERATUR muss zwischen 0 und 120 liegen&quot;)}
+    {% endif %}
+    M140 S{temp}
+</code></pre>
+<p><code>rawparams</code> holds the complete, unparsed parameter string of the call.</p>
+<h2>Reading state: <code>printer</code></h2>
+<p><code>printer</code> exposes the current printer state (fields: see the Status Reference in the Klipper docs). The name after <code>printer</code> is the config section name, e.g. <code>printer.fan</code>; exceptions include <code>gcode_move</code> and <code>toolhead</code>. Sections with spaces in the name use brackets: <code>printer["gcode_macro NAME"]</code>.</p>
+<h2>Evaluation comes before execution</h2>
+<ul>
+<li>The macro is <strong>fully evaluated before</strong> the first generated command runs. State changes caused by those commands are not visible during evaluation.</li>
+<li>A nested macro is evaluated only when it is invoked, i.e. after the calling macro was fully evaluated.</li>
+</ul>
+<h2>Variables between calls</h2>
+<p>Use <code>variable_&lt;name&gt;</code> for an initial value and <code>SET_GCODE_VARIABLE</code> to change it. Variable names contain no upper-case characters. The value must be a valid Python literal. Because of the order above, the change applies after execution, not within the same evaluation.</p>
+<!-- beispiel: klipper/bett_merken.cfg -->
+
+<pre><code class="language-ini">[gcode_macro BETT_MERKEN]
+variable_gemerkt: 0
+gcode:
+    SET_GCODE_VARIABLE MACRO=BETT_MERKEN VARIABLE=gemerkt VALUE={printer.heater_bed.target}
+    M140 S0
+
+[gcode_macro BETT_ZURUECK]
+gcode:
+    M140 S{printer[&quot;gcode_macro BETT_MERKEN&quot;].gemerkt}
+</code></pre>
+<!-- beispiel: klipper/duese_wischen.cfg -->
+
+<pre><code class="language-ini">[gcode_macro DUESE_WISCHEN]
+description: Wischt die Duese in mehreren Durchgaengen
+variable_durchgaenge: 3
+gcode:
+    SAVE_GCODE_STATE NAME=wischen
+    G90
+    {% for i in range(durchgaenge) %}
+        G1 X{20 + i * 5} F6000
+        G1 X{60 + i * 5} F6000
+    {% endfor %}
+    RESTORE_GCODE_STATE NAME=wischen
+</code></pre>
+<h2>Actions</h2>
+<p>Actions take effect at <strong>evaluation</strong> time, possibly well before the generated commands run:
+- <code>action_respond_info(msg)</code>: message to the console.
+- <code>action_raise_error(msg)</code>: aborts this macro and all callers.
+- <code>action_emergency_stop(msg)</code>: puts the printer into shutdown (<code>msg</code> optional).
+- <code>action_call_remote_method(name, ...)</code>: calls a method registered by a client.</p>
+<h2>Delayed G-code and saved variables</h2>
+<ul>
+<li><code>[delayed_gcode]</code> runs G-code after a countdown, started with <code>UPDATE_DELAYED_GCODE ID=... DURATION=...</code>. <code>DURATION=0</code> cancels it. <code>initial_duration</code> starts counting from the "ready" state.</li>
+<li>With <code>[save_variables]</code>, <code>SAVE_VARIABLE VARIABLE=&lt;name&gt; VALUE=&lt;value&gt;</code> persists values across restarts. They are then available in <code>printer.save_variables.variables</code>.</li>
+</ul>
+<h2>Pitfalls</h2>
+<ol>
+<li>Parameters are strings, never calculate without <code>|float</code>/<code>|int</code>.</li>
+<li>State changes are not visible within one evaluation.</li>
+<li><code>SET_GCODE_VARIABLE</code> takes effect after execution.</li>
+<li>Actions run earlier than the generated G-code.</li>
+<li>Mind indentation and lower-case variable names.</li>
+</ol>
+<h2>Verified</h2>
+<p>The examples above live as files in <code>wiki/beispiele/klipper/</code> and are rendered on every test run with Jinja2 3.1.6 and Klipper's environment settings (see <code>tests/</code>). This does not replace a run on a real Klipper.</p>
+<h2>Sources</h2>
+<ul>
+<li><code>klipper-command-templates</code>: Klipper docs "Command Templates" (retrieval: see <code>knowledge-base/fetched/</code>).</li>
+<li><code>klipper-gcode-macro-source</code>: <code>klippy/extras/gcode_macro.py</code> (environment, context, name check).</li>
+</ul></article>
+<p class="meta">Der Chat-Agent läuft lokal, siehe README. Diese Seite zeigt nur das Wiki. Jede Aussage hat eine Quelle, Status und Prüfdatum stehen im Artikelkopf.</p>
+</main>
+<script src="../fx.js"></script>
+</body>
+</html>
