@@ -63,7 +63,7 @@ class Agent:
                 out.append({"source_id": q, "abgerufen_am": rec["abgerufen_am"], "sha256": rec["sha256"]})
         return out
 
-    def ask(self, frage, lang="de"):
+    def ask(self, frage, lang="de", client=None):
         if lang not in retrieval.STOP:
             raise ValueError("sprache muss 'de' oder 'en' sein")
         frage = (frage or "").strip()
@@ -73,7 +73,7 @@ class Agent:
         if not chunks:
             return {"antwort": NICHT_BELEGT[lang], "daten_klasse": "nicht_belegt", "zitate": [], "warnungen": []}
         kontext = "\n\n".join(f"<abschnitt schluessel=\"{c.key}\" status=\"{c.status}\">\n{c.text}\n</abschnitt>" for c in chunks)
-        resp = self.client.messages.create(
+        resp = (client or self.client).messages.create(
             model=self.model,
             max_tokens=4096,
             output_config={"effort": "medium"},

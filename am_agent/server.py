@@ -1,7 +1,7 @@
 """FastAPI-Server: Chat-API und Wiki-Anzeige. Start: uvicorn am_agent.server:app"""
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -24,16 +24,20 @@ def create_app(client=None, root=ROOT):
     app = FastAPI(title="AM-Wiki-Agent")
     holder = {"agent": None}
 
-    def agent():
+    def agent(eigener=None):
         if holder["agent"] is None:
             c = client
             if c is None:
-                import anthropic  # Zugangsdaten kommen aus der Umgebung, nie aus dem Browser
+                import anthropic  # Server-Schluessel nur aus Umgebung/.env
                 try:
                     c = anthropic.Anthropic()
                 except Exception as exc:
-                    raise HTTPException(503, "Claude-API nicht konfiguriert") from exc
+                    if eigener is None:
+                        raise HTTPException(503, "Claude-API nicht konfiguriert: Server-Schlüssel fehlt, eigenen Schlüssel eingeben") from exc
+                    c = None  # kein Server-Schluessel; die Anfrage nutzt den eigenen
             holder["agent"] = Agent(c, root)
+        elif holder["agent"].client is None and eigener is None:
+            raise HTTPException(503, "Claude-API nicht konfiguriert: Server-Schlüssel fehlt, eigenen Schlüssel eingeben")
         return holder["agent"]
 
     @app.get("/api/health")
@@ -41,11 +45,25 @@ def create_app(client=None, root=ROOT):
         return {"status": "ok"}
 
     @app.post("/api/ask")
-    def ask(body: Frage):
+    def ask(body: Frage, x_anthropic_key: str | None = Header(default=None)):
+        # Eigener Schluessel des Nutzers: gilt nur fuer diese Anfrage, wird weder gespeichert noch geloggt.
+        eigener = None
+        if x_anthropic_key:
+            import anthropic
+            eigener = anthropic.Anthropic(api_key=x_anthropic_key.strip(), max_retries=1)
         try:
-            return agent().ask(body.frage, body.sprache)
+            return agent(eigener).ask(body.frage, body.sprache, client=eigener)
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
+        except Exception as exc:
+            if eigener is None or not type(exc).__module__.startswith("anthropic"):
+                raise
+            status = getattr(exc, "status_code", None)
+            if status in (401, 403):
+                raise HTTPException(401, "Schlüssel wurde von Anthropic abgelehnt") from None
+            if status == 429:
+                raise HTTPException(429, "Anthropic: Limit erreicht, später erneut versuchen") from None
+            raise HTTPException(502, "Anthropic-Aufruf fehlgeschlagen") from None
 
     @app.get("/api/wiki")
     def wiki_liste(sprache: str = "de"):

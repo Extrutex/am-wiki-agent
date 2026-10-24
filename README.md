@@ -32,6 +32,8 @@ python3 am_research_builder.py --only klipper-releases   # echter Abruf
 cp .env.example .env      # ANTHROPIC_API_KEY dort eintragen (.env ist nicht in Git); oder: ant auth login
 .venv/bin/uvicorn am_agent.server:app --port 8791
 ```
+Nutzer können im Chat einen eigenen Anthropic-Schlüssel eintragen (Header `X-Anthropic-Key`, nur pro Anfrage, nicht gespeichert oder geloggt, bleibt im Browser-Tab). Ohne Server-Schlüssel läuft der Chat dann nur damit.
+
 Modell über `AM_MODEL` (Standard `claude-sonnet-5-5`). **Jede Frage kostet Geld auf deinem API-Konto.** Der Server hat noch kein Nutzungslimit: nicht öffentlich betreiben, bevor Kontingent und Kostendeckel (Spend-Limit in der Console) eingerichtet sind.
 
 Der Workflow `Recherche` läuft manuell oder montags 05:00 UTC und legt das Ergebnis nur als Artefakt ab.

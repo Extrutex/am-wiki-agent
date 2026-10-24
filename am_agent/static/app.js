@@ -39,6 +39,12 @@ async function ladeListe() {
   }
 }
 
+const KEY = "am-anthropic-key";
+try { $("key").value = sessionStorage.getItem(KEY) || ""; } catch (e) { /* ohne Speicher weiter */ }
+$("key").addEventListener("change", () => {
+  try { sessionStorage.setItem(KEY, $("key").value.trim()); } catch (e) { /* ignorieren */ }
+});
+
 $("lang").addEventListener("change", ladeListe);
 $("form").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -48,7 +54,7 @@ $("form").addEventListener("submit", async (e) => {
   try {
     const res = await fetch("/api/ask", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...($("key").value.trim() ? { "X-Anthropic-Key": $("key").value.trim() } : {}) },
       body: JSON.stringify({ frage, sprache: $("lang").value }),
     });
     const d = await res.json();

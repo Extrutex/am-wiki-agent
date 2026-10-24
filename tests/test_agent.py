@@ -136,6 +136,58 @@ if __name__ == "__main__":
     unittest.main()
 
 
+class EigenerSchluessel(unittest.TestCase):
+    """Nutzer bringt seinen Anthropic-Schluessel mit: nur pro Anfrage, nie als Server-Client gemerkt."""
+    GEHEIM = "sk-ant-test-geheim-123"
+
+    def _factory(self, fake):
+        import anthropic
+
+        def make(*a, **kw):
+            if kw.get("api_key") is None:
+                raise anthropic.AnthropicError("kein Server-Key")
+            make.keys.append(kw["api_key"])
+            return fake
+        make.keys = []
+        return make
+
+    def test_header_wird_genutzt_und_nicht_gemerkt(self):
+        import anthropic
+        fake = FakeClient(f"Strings [{PARAMS}].")
+        make = self._factory(fake)
+        with mock.patch.object(anthropic, "Anthropic", side_effect=make):
+            http = TestClient(create_app(None, ROOT))
+            r = http.post("/api/ask", json={"frage": Antwort.FRAGE}, headers={"X-Anthropic-Key": self.GEHEIM})
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(make.keys, [self.GEHEIM])
+            self.assertNotIn(self.GEHEIM, r.text)
+            self.assertEqual(len(fake.calls), 1)
+            # naechste Anfrage ohne Header darf den fremden Schluessel nicht erben
+            r2 = http.post("/api/ask", json={"frage": Antwort.FRAGE})
+            self.assertEqual(r2.status_code, 503)
+            self.assertEqual(len(fake.calls), 1)
+
+    def test_abgelehnter_schluessel_401_ohne_echo(self):
+        import anthropic
+        fake = FakeClient()
+
+        def boom(**kw):
+            e = anthropic.AnthropicError("x")
+            e.status_code = 401
+            e.__class__ = type("AuthenticationError", (anthropic.AnthropicError,), {"__module__": "anthropic"})
+            raise e
+        fake.messages = NS(create=boom)
+        with mock.patch.object(anthropic, "Anthropic", side_effect=self._factory(fake)):
+            r = TestClient(create_app(None, ROOT)).post(
+                "/api/ask", json={"frage": Antwort.FRAGE}, headers={"X-Anthropic-Key": self.GEHEIM})
+        self.assertEqual(r.status_code, 401)
+        self.assertNotIn(self.GEHEIM, r.text)
+
+    def test_oberflaeche_hat_schluesselfeld(self):
+        html = (ROOT / "am_agent" / "static" / "index.html").read_text()
+        self.assertIn('type="password"', html)
+
+
 class EnvLader(unittest.TestCase):
     def test_laedt_ohne_zu_ueberschreiben(self):
         import os, tempfile

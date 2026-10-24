@@ -15,6 +15,10 @@
   <section id="wiki"><h2>Wiki</h2><ul id="artikel"></ul><pre id="text" hidden></pre></section>
   <section id="chat">
     <h2>Frage</h2>
+    <details id="schluessel"><summary>Eigener Anthropic-API-Schlüssel (optional)</summary>
+      <input id="key" type="password" autocomplete="off" placeholder="API-Schlüssel">
+      <p class="meta">Der Schlüssel bleibt in diesem Browser-Tab (sessionStorage) und wird nur mit deiner Frage an diesen Server gesendet. Der Server speichert und loggt ihn nicht. Die Kosten trägt dein Anthropic-Konto.</p>
+    </details>
     <div id="verlauf" aria-live="polite"></div>
     <form id="form"><textarea id="frage" required maxlength="2000" rows="3"></textarea><button>Fragen</button></form>
   </section>
