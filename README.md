@@ -16,6 +16,7 @@ Next-Gen-Wiki mit Chat-Agent für 3D-Druck (Klipper, Marlin, Bambu Lab, Prusa, T
 | `klipper_macro_check.py` | Lint und Test-Rendering von Klipper-Makros mit Klippers Jinja2-Einstellungen (nur Rendern). |
 | `wiki_tools.py` | Prüft Artikel: Quellen, Abrufe, Beispiele, de/en-Paare. |
 | `am_agent/` | Chat-Agent: Suche (BM25) über Wiki-Abschnitte, Claude-Aufruf mit Zitatprüfung, FastAPI-Server, Oberfläche (`static/`). Ohne passenden Abschnitt wird Claude nicht gefragt. |
+| `build_pages.py` | Baut aus dem Wiki eine statische Seite (`site/`) für GitHub Pages. Der Chat läuft dort nicht, nur lokal oder auf eigenem Server. |
 | `tests/`, `.github/workflows/` | Offline-Tests und Actions. |
 
 ## Benutzung
