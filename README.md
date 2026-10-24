@@ -1,6 +1,6 @@
 # AM-Plattform-Workspace
 
-Next-Gen-Wiki mit Chat-Agent für 3D-Druck (Klipper, Marlin, Bambu Lab, Prusa, Tuning, später alle Verfahren). Jede Aussage hat eine Quelle, Beispiele sind getestet. Der Chat-Agent (FastAPI + Claude API) ist geplant, aber noch nicht gebaut.
+Next-Gen-Wiki mit Chat-Agent für 3D-Druck (Klipper, Marlin, Bambu Lab, Prusa, Tuning, später alle Verfahren). Jede Aussage hat eine Quelle, Beispiele sind getestet. Der Chat-Agent (FastAPI + Claude API) beantwortet Fragen nur mit Zitaten aus dem Wiki.
 
 ## Inhalt
 | Pfad | Zweck |
@@ -15,6 +15,7 @@ Next-Gen-Wiki mit Chat-Agent für 3D-Druck (Klipper, Marlin, Bambu Lab, Prusa, T
 | `wiki/beispiele/` | Getestete Beispieldateien, die in den Artikeln eingebettet sind. |
 | `klipper_macro_check.py` | Lint und Test-Rendering von Klipper-Makros mit Klippers Jinja2-Einstellungen (nur Rendern). |
 | `wiki_tools.py` | Prüft Artikel: Quellen, Abrufe, Beispiele, de/en-Paare. |
+| `am_agent/` | Chat-Agent: Suche (BM25) über Wiki-Abschnitte, Claude-Aufruf mit Zitatprüfung, FastAPI-Server, Oberfläche (`static/`). Ohne passenden Abschnitt wird Claude nicht gefragt. |
 | `tests/`, `.github/workflows/` | Offline-Tests und Actions. |
 
 ## Benutzung
@@ -26,6 +27,13 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 python3 am_research_builder.py --list      # Quellen anzeigen
 python3 am_research_builder.py --only klipper-releases   # echter Abruf
 ```
+## Chat-Agent starten
+```
+ant auth login            # oder ANTHROPIC_API_KEY setzen; der Schlüssel bleibt auf dem Server
+.venv/bin/uvicorn am_agent.server:app --port 8791
+```
+Modell über `AM_MODEL` (Standard `claude-sonnet-5-5`). **Jede Frage kostet Geld auf deinem API-Konto.** Der Server hat noch kein Nutzungslimit: nicht öffentlich betreiben, bevor Kontingent und Kostendeckel (Spend-Limit in der Console) eingerichtet sind.
+
 Der Workflow `Recherche` läuft manuell oder montags 05:00 UTC und legt das Ergebnis nur als Artefakt ab.
 
 ## Erweitern

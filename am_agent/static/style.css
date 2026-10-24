@@ -1,0 +1,12 @@
+body{font-family:system-ui,sans-serif;margin:0;line-height:1.5;color:#1b1b1b;background:#fafafa}
+header,main{max-width:60rem;margin:0 auto;padding:1rem}
+main{display:grid;grid-template-columns:1fr 2fr;gap:1.5rem}
+@media(max-width:700px){main{grid-template-columns:1fr}}
+textarea{width:100%;box-sizing:border-box;padding:.4rem}
+button{padding:.4rem .9rem;margin-top:.4rem}
+pre{white-space:pre-wrap;background:#fff;border:1px solid #ddd;padding:.6rem;max-height:30rem;overflow:auto}
+.msg{margin:.5rem 0;padding:.5rem .7rem;border-radius:4px;background:#eef;white-space:pre-wrap}
+.msg.ich{background:#e8f5e8}
+.meta{font-size:.8em;color:#555}
+.warn{color:#8a4b00}
+a{cursor:pointer;color:#06c}

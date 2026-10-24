@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AM-Wiki-Agent</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>AM-Wiki-Agent</h1>
+  <label>Sprache <select id="lang"><option value="de">Deutsch</option><option value="en">English</option></select></label>
+</header>
+<main>
+  <section id="wiki"><h2>Wiki</h2><ul id="artikel"></ul><pre id="text" hidden></pre></section>
+  <section id="chat">
+    <h2>Frage</h2>
+    <div id="verlauf" aria-live="polite"></div>
+    <form id="form"><textarea id="frage" required maxlength="2000" rows="3"></textarea><button>Fragen</button></form>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
