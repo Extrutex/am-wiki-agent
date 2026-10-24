@@ -106,6 +106,8 @@ def build(out, root=ROOT):
     for f in ("style.css", "fx.js"):
         shutil.copy(STATIC / f, out / f)
     shutil.copy(ROOT / "docs" / "assets" / "logo.svg", out / "favicon.svg")
+    for f in sorted((ROOT / "docs" / "verify").glob("*")):  # Inhaberschaftsbestaetigungen (Search Console)
+        shutil.copy(f, out / f.name)
     karten = {lang: [] for lang in wiki_tools.SPRACHEN}
     alle = list(artikel(root))
     seiten = []
