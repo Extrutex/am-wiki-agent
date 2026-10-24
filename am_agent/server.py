@@ -20,6 +20,14 @@ class Frage(BaseModel):
     sprache: str = "de"
 
 
+class CfgWunsch(BaseModel):
+    wunsch: str
+    cfg: str
+    sprache: str = "de"
+    pin_freigabe: bool = False
+    pin_bestaetigung: str = ""
+
+
 def create_app(client=None, root=ROOT):
     app = FastAPI(title="AM-Wiki-Agent")
     holder = {"agent": None}
@@ -44,15 +52,14 @@ def create_app(client=None, root=ROOT):
     def health():
         return {"status": "ok"}
 
-    @app.post("/api/ask")
-    def ask(body: Frage, x_anthropic_key: str | None = Header(default=None)):
+    def aufruf(x_anthropic_key, fn):
         # Eigener Schluessel des Nutzers: gilt nur fuer diese Anfrage, wird weder gespeichert noch geloggt.
         eigener = None
         if x_anthropic_key:
             import anthropic
             eigener = anthropic.Anthropic(api_key=x_anthropic_key.strip(), max_retries=1)
         try:
-            return agent(eigener).ask(body.frage, body.sprache, client=eigener)
+            return fn(agent(eigener), eigener)
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
         except Exception as exc:
@@ -64,6 +71,15 @@ def create_app(client=None, root=ROOT):
             if status == 429:
                 raise HTTPException(429, "Anthropic: Limit erreicht, später erneut versuchen") from None
             raise HTTPException(502, "Anthropic-Aufruf fehlgeschlagen") from None
+
+    @app.post("/api/ask")
+    def ask(body: Frage, x_anthropic_key: str | None = Header(default=None)):
+        return aufruf(x_anthropic_key, lambda a, c: a.ask(body.frage, body.sprache, client=c))
+
+    @app.post("/api/cfg")
+    def cfg_bearbeiten(body: CfgWunsch, x_anthropic_key: str | None = Header(default=None)):
+        return aufruf(x_anthropic_key, lambda a, c: a.edit_cfg(
+            body.wunsch, body.cfg, body.sprache, body.pin_freigabe, body.pin_bestaetigung, client=c))
 
     @app.get("/api/wiki")
     def wiki_liste(sprache: str = "de"):
