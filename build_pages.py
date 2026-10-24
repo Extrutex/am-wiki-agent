@@ -1,7 +1,7 @@
-"""Baut aus dem Wiki eine statische Seite fuer GitHub Pages (nur Lesen, kein Chat).
+"""Baut aus dem Wiki eine statische Seite für GitHub Pages (nur Lesen, kein Chat).
 
 Aufruf: python build_pages.py [ausgabeordner]   (Standard: site/)
-Der Chat-Agent braucht einen Server und laeuft nicht auf Pages.
+Der Chat-Agent braucht einen Server und läuft nicht auf Pages.
 """
 import html
 import os
@@ -52,8 +52,16 @@ def artikel(root=ROOT):
             yield lang, meta, body
 
 
+STATUS = {"de": {"bestaetigt": "bestätigt", "offen": "offen", "beispiel": "Beispiel"},
+          "en": {"bestaetigt": "confirmed", "offen": "open", "beispiel": "example"}}
+
+
+def status_label(lang, status):
+    return STATUS[lang].get(status, status)
+
+
 def beschreibung(body, limit=160):
-    """Erster Absatz nach 'Kurzfassung'/'Summary' (sonst erster Absatz), ohne Markdown, auf limit gekuerzt."""
+    """Erster Absatz nach 'Kurzfassung'/'Summary' (sonst erster Absatz), ohne Markdown, auf limit gekürzt."""
     m = re.search(r"^##\s+(?:Kurzfassung|Summary)\s*\n+(.+?)(?:\n\n|\Z)", body, re.M | re.S)
     text = m.group(1) if m else next((b for b in body.split("\n\n") if b.strip() and not b.startswith("#")), "")
     text = re.sub(r"[`*#>\[\]]|\(https?://[^)]*\)", "", " ".join(text.split()))
@@ -87,7 +95,7 @@ def render(lang, meta, body, alternativen=None):
     teile = markdown.markdown(body, extensions=["fenced_code", "tables"])
     if "<script" in teile.lower():
         raise ValueError(f"{meta['id']}: Skript im Artikel nicht erlaubt")
-    kopf = (f'<p class="meta"><span class="badge {html.escape(meta["status"])}">{html.escape(meta["status"])}</span> '
+    kopf = (f'<p class="meta"><span class="badge {html.escape(meta["status"])}">{html.escape(status_label(lang, meta["status"]))}</span> '
             f'geprüft am {html.escape(meta["geprueft_am"])} · Quellen: {html.escape(", ".join(meta["quellen"]))}</p>')
     pfad = f"{lang}/{meta['id']}.html"
     ld = {"@context": "https://schema.org", "@type": "TechArticle", "headline": meta["titel"],
@@ -117,7 +125,7 @@ def build(out, root=ROOT):
         (out / lang / f"{meta['id']}.html").write_text(render(lang, meta, body, alt if len(alt) > 1 else None), encoding="utf-8")
         seiten.append((f"{lang}/{meta['id']}.html", meta["geprueft_am"]))
         karten[lang].append(f'<li><a href="{lang}/{html.escape(meta["id"])}.html">{html.escape(meta["titel"])}</a> '
-                            f'({html.escape(meta["status"])}, geprüft {html.escape(meta["geprueft_am"])})</li>')
+                            f'({html.escape(status_label(lang, meta["status"]))}, geprüft {html.escape(meta["geprueft_am"])})</li>')
     hero = (
         '<section class="hero"><h2>Das Wiki für <span class="grad">3D-Druck-Firmware</span>,<br>in dem jede Aussage eine Quelle hat.</h2>'
         '<p>Belegte Artikel, getestete Beispiele und ein Chat-Agent, der nicht rät. Zweisprachig, Deutsch und Englisch.</p>'

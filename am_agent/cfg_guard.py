@@ -1,7 +1,7 @@
 """Schutz der Hardware-Zuordnung in einer printer.cfg.
 
-Vergleicht Original und Vorschlag und meldet jede Aenderung an Pins und
-Geraetekennungen. Der Server prueft damit jeden Vorschlag des Agenten; die
+Vergleicht Original und Vorschlag und meldet jede Änderung an Pins und
+Gerätekennungen. Der Server prüft damit jeden Vorschlag des Agenten; die
 Regel steht hier im Code und nicht nur im Prompt.
 """
 import difflib
@@ -14,7 +14,7 @@ MAX_CFG = 200_000
 SEKTION = re.compile(r"^\[([^\]]*)\]")
 SCHLUESSEL = re.compile(r"^([^\s:=#;][^:=]*?)\s*[:=]\s*(.*)$")
 INLINE_KOMMENTAR = re.compile(r"\s+[#;].*$")
-# Schluessel ohne _pin-Endung, die trotzdem Hardware festlegen
+# Schlüssel ohne _pin-Endung, die trotzdem Hardware festlegen
 FESTE_SCHLUESSEL = {"pin", "pins", "adc1", "adc2", "serial", "canbus_uuid", "canbus_interface"}
 INCLUDE = "[include]"
 
@@ -33,7 +33,7 @@ class Aenderung:
 
 
 def bestaetigt(satz):
-    """Der Extra-Bestaetigungssatz, tolerant gegen Gross-/Kleinschreibung, Leerraum und Punkt."""
+    """Der Extra-Bestätigungssatz, tolerant gegen Gross-/Kleinschreibung, Leerraum und Punkt."""
     norm = re.sub(r"[\s.!]+", " ", (satz or "").lower()).strip()
     norm = norm.replace("ß", "ss").replace("weiß", "weiss")
     return norm == BESTAETIGUNG
@@ -47,7 +47,7 @@ def ist_geschuetzt(sektion, schluessel):
 
 
 def geschuetzte_werte(text):
-    """Alle geschuetzten Eintraege als {(sektion, schluessel): [werte]}. Auch der SAVE_CONFIG-Block (#*#)."""
+    """Alle geschützten Einträge als {(sektion, schlüssel): [werte]}. Auch der SAVE_CONFIG-Block (#*#)."""
     out, sektion, schluessel = {}, None, None
     for roh in (text or "").splitlines():
         zeile = roh

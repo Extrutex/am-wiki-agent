@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pruefung der Wiki-Artikel (wiki/<sprache>/...): Kopfdaten, Quellen, Beispiele, Zweisprachigkeit."""
+"""Prüfung der Wiki-Artikel (wiki/<sprache>/...): Kopfdaten, Quellen, Beispiele, Zweisprachigkeit."""
 import re
 from pathlib import Path
 

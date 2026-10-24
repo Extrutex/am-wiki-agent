@@ -15,7 +15,7 @@ PARAMS = "klipper-makros-jinja2#Parameter: `params`"
 
 
 class FakeClient:
-    """Ersatz fuer anthropic.Anthropic: zeichnet Aufrufe auf, antwortet fest."""
+    """Ersatz für anthropic.Anthropic: zeichnet Aufrufe auf, antwortet fest."""
 
     def __init__(self, text="", stop_reason="end_turn"):
         self.calls = []
@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
 
 class EigenerSchluessel(unittest.TestCase):
-    """Nutzer bringt seinen Anthropic-Schluessel mit: nur pro Anfrage, nie als Server-Client gemerkt."""
+    """Nutzer bringt seinen Anthropic-Schlüssel mit: nur pro Anfrage, nie als Server-Client gemerkt."""
     GEHEIM = "sk-ant-test-geheim-123"
 
     def _factory(self, fake):
@@ -162,7 +162,7 @@ class EigenerSchluessel(unittest.TestCase):
             self.assertEqual(make.keys, [self.GEHEIM])
             self.assertNotIn(self.GEHEIM, r.text)
             self.assertEqual(len(fake.calls), 1)
-            # naechste Anfrage ohne Header darf den fremden Schluessel nicht erben
+            # nächste Anfrage ohne Header darf den fremden Schlüssel nicht erben
             r2 = http.post("/api/ask", json={"frage": Antwort.FRAGE})
             self.assertEqual(r2.status_code, 503)
             self.assertEqual(len(fake.calls), 1)

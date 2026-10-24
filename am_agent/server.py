@@ -57,7 +57,7 @@ def create_app(client=None, root=ROOT, limits=None):
         return {"status": "ok", "kontingent": "frei" if limits.frei() else "leer"}
 
     def client_ip(request):
-        # Hinter einem Proxy zaehlt nur dessen X-Forwarded-For, wenn AM_TRUST_PROXY=1 gesetzt ist.
+        # Hinter einem Proxy zählt nur dessen X-Forwarded-For, wenn AM_TRUST_PROXY=1 gesetzt ist.
         if os.environ.get("AM_TRUST_PROXY") == "1":
             fwd = request.headers.get("x-forwarded-for", "").split(",")[-1].strip()
             if fwd:
@@ -65,7 +65,7 @@ def create_app(client=None, root=ROOT, limits=None):
         return request.client.host if request.client else "unbekannt"
 
     def aufruf(request, x_anthropic_key, fn):
-        # Eigener Schluessel des Nutzers: gilt nur fuer diese Anfrage, wird weder gespeichert noch geloggt.
+        # Eigener Schlüssel des Nutzers: gilt nur für diese Anfrage, wird weder gespeichert noch geloggt.
         eigener = None
         if not x_anthropic_key:  # Server-Schluessel: Limits gelten, Kosten tragen wir
             try:

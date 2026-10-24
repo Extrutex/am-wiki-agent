@@ -59,7 +59,7 @@ def now_utc():
 
 
 def fetch_source(source, allowed_hosts, getter=http_get, clock=now_utc):
-    """Gibt einen Datensatz zurueck; wirft bei Fehlern."""
+    """Gibt einen Datensatz zurück; wirft bei Fehlern."""
     url = request_url(source)
     check_host(url, allowed_hosts)
     status, body = getter(url)

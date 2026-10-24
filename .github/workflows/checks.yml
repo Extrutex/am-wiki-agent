@@ -1,4 +1,4 @@
-name: Pruefungen
+name: Prüfungen
 on:
   push:
   pull_request:

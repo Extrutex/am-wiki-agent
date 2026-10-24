@@ -38,7 +38,7 @@ flowchart LR
     Z --> A[Antwort mit Belegen<br/>+ Einstufung]
 ```
 
-Einstufung: `bestaetigt` (alle Belege gültig, Artikel bestätigt, keine Warnungen), `offen` (Hinweise offen) oder `nicht_belegt`.
+Einstufung: **bestätigt** (alle Belege gültig, Artikel bestätigt, keine Warnungen), **offen** (Hinweise offen) oder **nicht belegt**. In der API heißen die Werte `bestaetigt`, `offen` und `nicht_belegt`.
 
 ## Schnellstart
 
@@ -90,12 +90,12 @@ Gezählt wird nach der Antwort, ein Aufruf kann das Budget also um seine eigene 
 ## Wiki erweitern
 
 - Artikel werden **neu aus Primärquellen geschrieben**, fremde Guides werden nicht kopiert.
-- Status `bestaetigt` nur mit Quelle und Abruf unter `knowledge-base/fetched/`.
+- Status „bestätigt“ (Wert `bestaetigt`) nur mit Quelle und Abruf unter `knowledge-base/fetched/`.
 - Jeder Artikel existiert in `de` und `en` mit gleichen Quellen und Beispielen.
 - Codeblöcke mit `<!-- beispiel: datei -->` müssen mit der Datei in `wiki/beispiele/` übereinstimmen.
 - Neue Quelle: Eintrag in `knowledge-base/sources.json` (Host in `allowed_hosts` ergänzen), dem Agenten in `am_specialist_spec.json` zuordnen, `am_validate.py` ausführen.
 
-**Datenklassen:** `bestaetigt` nur mit Quelle und Abruf. `beispiel` sind Demodaten und nie als Fakt zu verwenden.
+**Datenklassen:** „bestätigt“ gibt es nur mit Quelle und Abruf. „Beispiel“ (Wert `beispiel`) sind Demodaten und nie als Fakt zu verwenden.
 
 ## Aufbau
 

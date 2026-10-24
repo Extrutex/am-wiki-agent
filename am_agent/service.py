@@ -1,6 +1,6 @@
-"""Frage-Antwort-Logik: Abrufen, Claude fragen, Zitate pruefen.
+"""Frage-Antwort-Logik: Abrufen, Claude fragen, Zitate prüfen.
 
-Der Client wird von aussen uebergeben (Tests nutzen einen Ersatz).
+Der Client wird von aussen übergeben (Tests nutzen einen Ersatz).
 Ohne passende Wiki-Abschnitte wird Claude gar nicht gefragt.
 """
 import json
@@ -139,7 +139,7 @@ class Agent:
                 "zitate": zitate, "warnungen": warnungen, "nutzung": nutzung}
 
     def edit_cfg(self, wunsch, cfg, lang="de", pin_freigabe=False, pin_bestaetigung="", client=None):
-        """Aenderungsvorschlag fuer eine printer.cfg. Pin-Aenderungen nur mit Freigabe und Bestaetigungssatz."""
+        """Änderungsvorschlag für eine printer.cfg. Pin-Änderungen nur mit Freigabe und Bestätigungssatz."""
         if lang not in retrieval.STOP:
             raise ValueError("sprache muss 'de' oder 'en' sein")
         wunsch, cfg = (wunsch or "").strip(), cfg or ""

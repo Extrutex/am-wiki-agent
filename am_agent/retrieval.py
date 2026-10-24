@@ -1,4 +1,4 @@
-"""Einfache Volltextsuche (BM25) ueber Wiki-Abschnitte. Keine Vektor-DB."""
+"""Einfache Volltextsuche (BM25) über Wiki-Abschnitte. Keine Vektor-DB."""
 import math
 import re
 from dataclasses import dataclass

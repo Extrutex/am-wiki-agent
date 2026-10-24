@@ -1,7 +1,12 @@
-// Alle Inhalte werden nur als Text eingefuegt, damit Antworten kein HTML einschleusen koennen.
+// Alle Inhalte werden nur als Text eingefügt, damit Antworten kein HTML einschleusen können.
 const $ = (id) => document.getElementById(id);
 const KEY = "am-anthropic-key";
 let letzteCfg = null;
+
+// Anzeigenamen: die API-Werte bleiben technisch (ASCII), sichtbar sind echte Umlaute
+const LABEL = { bestaetigt: "bestätigt", nicht_belegt: "nicht belegt", offen: "offen",
+  geaendert: "geändert", hinzugefuegt: "hinzugefügt", entfernt: "entfernt" };
+const label = (w) => LABEL[w] || w;
 
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -14,7 +19,7 @@ function add(cls, text, meta, warnungen, klasse) {
   const div = el("div", "msg " + cls, text);
   if (meta || klasse) {
     const m = el("div", "meta");
-    if (klasse) m.append(el("span", "badge " + klasse, klasse), " ");
+    if (klasse) m.append(el("span", "badge " + klasse, label(klasse)), " ");
     m.append(meta || "");
     div.append(m);
   }
@@ -29,7 +34,7 @@ function headers() {
   return h;
 }
 
-// Ablauf-Visualisierung: Knoten leuchten nacheinander, solange die Anfrage laeuft
+// Ablauf-Visualisierung: Knoten leuchten nacheinander, solange die Anfrage läuft
 let flowTimer = null;
 function flow(an) {
   clearInterval(flowTimer);
@@ -59,7 +64,7 @@ function zeigeTab(name) {
 }
 $("tabs").addEventListener("click", (e) => { if (e.target.dataset.tab) zeigeTab(e.target.dataset.tab); });
 
-// Schluessel nur im Tab
+// Schlüssel nur im Tab
 try { $("key").value = sessionStorage.getItem(KEY) || ""; } catch (e) { /* ohne Speicher weiter */ }
 $("key").addEventListener("change", () => {
   try { sessionStorage.setItem(KEY, $("key").value.trim()); } catch (e) { /* ignorieren */ }
@@ -82,7 +87,7 @@ async function ladeListe() {
     };
     link.onclick = oeffnen;
     link.onkeydown = (e) => { if (e.key === "Enter") oeffnen(); };
-    li.append(link, ` (${a.status}, geprüft ${a.geprueft_am})`);
+    li.append(link, ` (${label(a.status)}, geprüft ${a.geprueft_am})`);
     $("artikel").append(li);
   }
 }
@@ -142,11 +147,11 @@ $("cfgsenden").addEventListener("click", async () => {
     if (!ok) { $("cfgtext").append(el("div", "msg", "Fehler: " + (d.detail || status))); return; }
     const kopf = el("div", "msg", d.antwort || "");
     kopf.append(el("div", "meta", ""));
-    kopf.lastChild.append(el("span", "badge " + d.daten_klasse, d.daten_klasse));
+    kopf.lastChild.append(el("span", "badge " + d.daten_klasse, label(d.daten_klasse)));
     for (const w of d.warnungen || []) kopf.append(el("div", "meta warn", "Warnung: " + w));
     $("cfgtext").append(kopf);
     for (const p of d.pin_aenderungen || []) {
-      $("pinliste").append(el("div", "pin", `${d.blockiert ? "Gesperrt" : "Pin-Änderung"}: [${p.sektion}] ${p.schluessel} ${p.art}: "${p.alt}" → "${p.neu}"`));
+      $("pinliste").append(el("div", "pin", `${d.blockiert ? "Gesperrt" : "Pin-Änderung"}: [${p.sektion}] ${p.schluessel} ${label(p.art)}: "${p.alt}" → "${p.neu}"`));
     }
     if (d.cfg_neu) {
       letzteCfg = d.cfg_neu;
