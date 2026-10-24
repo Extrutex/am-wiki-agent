@@ -54,3 +54,14 @@ ul{padding-left:1.1rem}
 .laeuft{animation:puls 1s infinite}@keyframes puls{50%{opacity:.5}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.card{transform:none!important}#glow{display:none}}
 [hidden]{display:none!important}
+/* Startseite */
+.hero{text-align:center;padding:2.2rem 0 1.4rem}
+.hero h2{font-size:clamp(1.6rem,4.5vw,2.6rem);line-height:1.2;margin:0 0 .8rem}
+.grad{background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--mut);max-width:38rem;margin:0 auto 1.2rem}
+.chips{list-style:none;display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;padding:0;margin:0 0 1.4rem}
+.chip{display:flex;flex-direction:column;align-items:center;padding:.5rem 1.1rem;border-radius:1rem;border:1px dashed rgba(129,140,248,.5);background:rgba(129,140,248,.08);font-weight:800;color:#a5b0ff}
+.chip small{font-weight:400;color:var(--mut);font-size:.75rem}
+.chip.an{border:1px solid var(--acc);background:rgba(94,234,212,.13);color:var(--acc);box-shadow:0 0 18px rgba(94,234,212,.2)}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem;text-align:left}
+.bar h1 a{color:inherit;text-decoration:none}

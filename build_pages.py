@@ -25,6 +25,7 @@ SEITE = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{titel}</title>
 {meta}
+<link rel="icon" href="{pre}favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="{pre}style.css">
 </head>
 <body>
@@ -104,6 +105,7 @@ def build(out, root=ROOT):
     out.mkdir(parents=True)
     for f in ("style.css", "fx.js"):
         shutil.copy(STATIC / f, out / f)
+    shutil.copy(ROOT / "docs" / "assets" / "logo.svg", out / "favicon.svg")
     karten = {lang: [] for lang in wiki_tools.SPRACHEN}
     alle = list(artikel(root))
     seiten = []
@@ -114,7 +116,16 @@ def build(out, root=ROOT):
         seiten.append((f"{lang}/{meta['id']}.html", meta["geprueft_am"]))
         karten[lang].append(f'<li><a href="{lang}/{html.escape(meta["id"])}.html">{html.escape(meta["titel"])}</a> '
                             f'({html.escape(meta["status"])}, geprüft {html.escape(meta["geprueft_am"])})</li>')
-    inhalt = "".join(f'<section class="card" id="{lang}"><h2>{name}</h2><ul>{"".join(karten[lang])}</ul></section>'
+    hero = (
+        '<section class="hero"><h2>Das Wiki für <span class="grad">3D-Druck-Firmware</span>,<br>in dem jede Aussage eine Quelle hat.</h2>'
+        '<p>Belegte Artikel, getestete Beispiele und ein Chat-Agent, der nicht rät. Zweisprachig, Deutsch und Englisch.</p>'
+        '<ul class="chips"><li class="chip an">Klipper<small>Kapitel 1 fertig</small></li>'
+        '<li class="chip">RepRapFirmware<small>geplant</small></li><li class="chip">Marlin<small>geplant</small></li>'
+        '<li class="chip">Bambu Lab<small>geplant</small></li><li class="chip">Prusa &amp; mehr<small>später</small></li></ul>'
+        '<div class="feat"><div class="card"><b>Belegt</b><br>Quelle, Abrufzeit und Prüfdatum bei jedem Artikel.</div>'
+        '<div class="card"><b>Getestet</b><br>Beispiele werden mit Klippers Jinja2-Einstellungen gerendert.</div>'
+        '<div class="card"><b>Sicher</b><br>Der Agent ändert nie Pins und sendet nichts an den Drucker.</div></div></section>')
+    inhalt = hero + "".join(f'<section class="card" id="{lang}"><h2>{name}</h2><ul>{"".join(karten[lang])}</ul></section>'
                      for lang, name in (("de", "Deutsch"), ("en", "English")))
     desc = "Wiki für 3D-Druck-Firmware (Klipper, Marlin, RepRap): jede Aussage mit Quelle, Beispiele getestet."
     ld = {"@context": "https://schema.org", "@type": "WebSite", "name": "AM-Wiki", "url": BASE,

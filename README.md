@@ -1,56 +1,124 @@
-# AM-Plattform-Workspace
+<div align="center">
 
-Next-Gen-Wiki mit Chat-Agent für 3D-Druck (Klipper, Marlin, Bambu Lab, Prusa, Tuning, später alle Verfahren). Jede Aussage hat eine Quelle, Beispiele sind getestet. Der Chat-Agent (FastAPI + Claude API) beantwortet Fragen nur mit Zitaten aus dem Wiki.
+<img src="docs/assets/banner.svg" alt="AM-Wiki-Agent: Wiki und Chat-Agent für 3D-Druck-Firmware, jede Aussage mit Quelle" width="100%">
 
-## Inhalt
-| Pfad | Zweck |
+<br>
+
+[![Prüfungen](https://github.com/Extrutex/am-wiki-agent/actions/workflows/checks.yml/badge.svg)](https://github.com/Extrutex/am-wiki-agent/actions/workflows/checks.yml)
+
+**[Zum Wiki](https://extrutex.github.io/am-wiki-agent/)** · **[Schnellstart](#schnellstart)** · **[Wie es funktioniert](#wie-es-funktioniert)** · **[Sicherheit](#sicherheit)**
+
+</div>
+
+<br>
+
+Next-Gen-Wiki mit Chat-Agent für 3D-Druck-Firmware. **Jede Aussage hat eine Quelle, jedes Beispiel ist getestet, und der Agent rät nicht:** Ohne passenden Wiki-Abschnitt wird Claude gar nicht erst gefragt.
+
+<img src="docs/assets/firmware.svg" alt="Firmware-Abdeckung: Klipper Kapitel 1 fertig, RepRapFirmware, Marlin, Bambu Lab, Prusa in Planung" width="100%">
+
+## Was drin steckt
+
+| | |
 |---|---|
-| `am_research_builder.py` | Ruft Websites und GitHub-Releases aus dem Register ab (nur HTTPS-GET). Speichert Abrufzeit, Quell-URL, SHA-256, Status. Fehler in `errors.jsonl`. |
-| `am_specialist_spec.json` | Versionierte Spezifikation: Zuständigkeiten, Quellenverweise, Trennung `bestaetigt` / `beispiel`. |
-| `am_validate.py` | Offline-Prüfung von Spezifikation und Register. |
-| `agents/` | Koordinator, Firmware, Hardware/Toolchanger, Quellenprüfung, B2B. |
-| `knowledge-base/sources.json` | Quellenregister (Klipper, RepRapFirmware, Marlin, Bambu, Toolchanger). |
-| `knowledge-base/fetched/` | Echte Abrufe, getrennt vom Register. |
-| `wiki/de`, `wiki/en` | Zweisprachige Artikel mit Kopfdaten (Quellen, Status, Prüfdatum). Erstes Kapitel: `klipper/makros-jinja2`. |
-| `wiki/beispiele/` | Getestete Beispieldateien, die in den Artikeln eingebettet sind. |
-| `klipper_macro_check.py` | Lint und Test-Rendering von Klipper-Makros mit Klippers Jinja2-Einstellungen (nur Rendern). |
-| `wiki_tools.py` | Prüft Artikel: Quellen, Abrufe, Beispiele, de/en-Paare. |
-| `am_agent/` | Chat-Agent: Suche (BM25) über Wiki-Abschnitte, Claude-Aufruf mit Zitatprüfung, FastAPI-Server, Oberfläche (`static/`). Ohne passenden Abschnitt wird Claude nicht gefragt. |
-| `build_pages.py` | Baut aus dem Wiki eine statische Seite (`site/`) für GitHub Pages. Der Chat läuft dort nicht, nur lokal oder auf eigenem Server. |
-| `tests/`, `.github/workflows/` | Offline-Tests und Actions. |
+| 📚 **Belegtes Wiki** | Artikel in Deutsch und Englisch mit Quellen, Abrufzeit, SHA-256 und Prüfdatum. Erstes Kapitel: *Klipper-Makros und Jinja2*. |
+| 💬 **Chat-Agent** | BM25-Suche über Wiki-Abschnitte, Antwort nur mit Zitaten, Zitate werden geprüft. Eigene Schlüssel der Nutzer werden unterstützt. |
+| 🛠️ **Config-Editor** | Der Agent schlägt Änderungen an der `printer.cfg` vor, mit Diff und Belegen. Eingespielt wird nichts, das tust du selbst. |
+| 🔒 **Pin-Schutz** | Pins und Gerätekennungen sind im Code gesperrt. Änderung nur mit ausdrücklicher Anforderung **und** Bestätigungssatz. |
+| 🧪 **Getestete Beispiele** | Makro-Beispiele werden mit Klippers Jinja2-Einstellungen gerendert. Wiki und Dateien müssen übereinstimmen. |
+| 🚦 **Kostengrenzen** | Rate-Limit pro IP und Tagesbudget an Tokens für den Server-Schlüssel. |
 
-## Benutzung
-Python 3; für Makro-Tests wird Jinja2 gebraucht.
+## Wie es funktioniert
+
+```mermaid
+flowchart LR
+    F[Frage] --> S[Suche im Wiki<br/>BM25]
+    S -->|keine Treffer| N[„Nicht belegt“<br/>kein API-Aufruf]
+    S -->|Treffer| C[Claude<br/>nur mit Abschnitten]
+    C --> Z[Zitatprüfung]
+    Z --> A[Antwort mit Belegen<br/>+ Einstufung]
 ```
+
+Einstufung: `bestaetigt` (alle Belege gültig, Artikel bestätigt, keine Warnungen), `offen` (Hinweise offen) oder `nicht_belegt`.
+
+## Schnellstart
+
+Python 3; für Makro-Tests wird Jinja2 gebraucht.
+
+```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 .venv/bin/python am_validate.py                       # Register, Spezifikation, Wiki prüfen
 .venv/bin/python -m unittest discover -s tests -t .   # Offline-Tests
-python3 am_research_builder.py --list      # Quellen anzeigen
-python3 am_research_builder.py --only klipper-releases   # echter Abruf
 ```
-## Chat-Agent starten
+
+**Chat-Agent starten**
+
+```bash
+cp .env.example .env      # ANTHROPIC_API_KEY=… eintragen (.env ist nicht in Git); oder: ant auth login
+.venv/bin/uvicorn am_agent.server:app --port 8791   # dann http://localhost:8791
 ```
-cp .env.example .env      # ANTHROPIC_API_KEY dort eintragen (.env ist nicht in Git); oder: ant auth login
-.venv/bin/uvicorn am_agent.server:app --port 8791
+
+Modell über `AM_MODEL` (Standard `claude-sonnet-5-5`). **Jede Frage kostet Geld auf deinem API-Konto.** Nutzer können im Chat auch einen eigenen Anthropic-Schlüssel eintragen (Header `X-Anthropic-Key`): Er gilt nur für die Anfrage, wird nicht gespeichert oder geloggt und bleibt im Browser-Tab.
+
+**Quellen abrufen**
+
+```bash
+python3 am_research_builder.py --list                    # Quellen anzeigen
+python3 am_research_builder.py --only klipper-releases   # echter Abruf (nur HTTPS-GET)
 ```
-Nutzer können im Chat einen eigenen Anthropic-Schlüssel eintragen (Header `X-Anthropic-Key`, nur pro Anfrage, nicht gespeichert oder geloggt, bleibt im Browser-Tab). Ohne Server-Schlüssel läuft der Chat dann nur damit.
 
-Modell über `AM_MODEL` (Standard `claude-sonnet-5-5`). **Jede Frage kostet Geld auf deinem API-Konto.** Grenzen für den Server-Schlüssel (Anfragen mit eigenem Nutzer-Schlüssel zählen nicht): Rate-Limit pro IP (`AM_RATE_PRO_MIN`, Standard 5; `AM_RATE_PRO_TAG`, Standard 40) und Tagesbudget an Tokens (`AM_TAGESBUDGET_TOKENS`, Standard 300000, UTC-Tag). Gezählt wird nach der Antwort, ein Aufruf kann das Budget also um seine eigene Größe überschreiten. Gespeichert werden nur Zähler in `.usage.json` (keine Fragen, Schlüssel oder IPs). Hinter einem Proxy `AM_TRUST_PROXY=1` setzen, damit `X-Forwarded-For` gilt (nur, wenn der Proxy ihn selbst setzt). `GET /api/health` zeigt `kontingent: frei|leer`. **Zusätzlich** in der Anthropic-Console ein Spend-Limit setzen, das ist die einzige harte Obergrenze.
+**Statische Seite bauen** (GitHub Pages, nur Wiki, ohne Chat): `python build_pages.py` erzeugt `site/`.
 
-Der Workflow `Recherche` läuft manuell oder montags 05:00 UTC und legt das Ergebnis nur als Artefakt ab.
+## Kostengrenzen
 
-## Erweitern
-Neue Quelle: Eintrag in `knowledge-base/sources.json` (Host in `allowed_hosts` ergänzen), Quelle dem Agenten in `am_specialist_spec.json` zuordnen, `am_validate.py` ausführen.
+Gelten für den Server-Schlüssel, Anfragen mit eigenem Nutzer-Schlüssel zählen nicht.
 
-## Datenklassen
-- `bestaetigt`: nur mit Quelle und Abruf.
-- `beispiel`: Demodaten, nie als Fakt verwenden.
+| Einstellung | Standard |
+|---|---|
+| `AM_RATE_PRO_MIN` | 5 Anfragen pro Minute und IP |
+| `AM_RATE_PRO_TAG` | 40 Anfragen pro Tag und IP |
+| `AM_TAGESBUDGET_TOKENS` | 300000 Tokens pro UTC-Tag, alle Nutzer zusammen |
+| `AM_TRUST_PROXY=1` | `X-Forwarded-For` gilt, nur wenn dein Proxy ihn selbst setzt |
 
-## Wiki-Regeln
-- Artikel werden neu aus Primärquellen geschrieben. Fremde Guides werden nicht kopiert.
+Gezählt wird nach der Antwort, ein Aufruf kann das Budget also um seine eigene Größe überschreiten. Gespeichert werden nur Zähler in `.usage.json`, keine Fragen, Schlüssel oder IPs. `GET /api/health` zeigt `kontingent: frei|leer`. **Setze zusätzlich ein Spend-Limit in der Anthropic-Console, das ist die einzige harte Obergrenze.**
+
+## Sicherheit
+
+- **Pins gesperrt:** Jede Änderung an `*_pin`, `pin`, `pins`, `adc1`, `adc2`, `serial`, `canbus_*`, `[board_pins]` und `[include]` blockt der Server, auch im `SAVE_CONFIG`-Block. Ändert der erste Vorschlag einen Pin, fragt der Server einmal nach und verwirft sonst alles. Freigabe nur mit ausdrücklicher Anforderung und dem Satz „Ich weiß was ich tue“.
+- **Nichts passiert automatisch:** keine Firmware-Updates, keine Druckerbefehle, keine Zahlungen, keine Veröffentlichung. Das Skript liest nur, Makros werden nur gerendert, Workflows haben nur `contents: read` (Pages zusätzlich `pages: write`).
+- **Schlüssel** stehen nur in der Umgebung oder in `.env`, nie im Browser-Code oder in Git.
+
+## Wiki erweitern
+
+- Artikel werden **neu aus Primärquellen geschrieben**, fremde Guides werden nicht kopiert.
 - Status `bestaetigt` nur mit Quelle und Abruf unter `knowledge-base/fetched/`.
 - Jeder Artikel existiert in `de` und `en` mit gleichen Quellen und Beispielen.
 - Codeblöcke mit `<!-- beispiel: datei -->` müssen mit der Datei in `wiki/beispiele/` übereinstimmen.
+- Neue Quelle: Eintrag in `knowledge-base/sources.json` (Host in `allowed_hosts` ergänzen), dem Agenten in `am_specialist_spec.json` zuordnen, `am_validate.py` ausführen.
 
-## Sicherheit
-Keine automatischen Firmware-Updates, Druckerbefehle, Zahlungen oder Veröffentlichungen. Das Skript liest nur, Makros werden nur gerendert, Workflows haben nur `contents: read`.
+**Datenklassen:** `bestaetigt` nur mit Quelle und Abruf. `beispiel` sind Demodaten und nie als Fakt zu verwenden.
+
+## Aufbau
+
+| Pfad | Zweck |
+|---|---|
+| `am_agent/` | Chat-Agent: Suche, Claude-Aufruf mit Zitatprüfung, Pin-Schutz (`cfg_guard.py`), Limits, FastAPI-Server, Oberfläche (`static/`) |
+| `wiki/de`, `wiki/en`, `wiki/beispiele/` | Zweisprachige Artikel und getestete Beispieldateien |
+| `knowledge-base/` | Quellenregister (`sources.json`) und echte Abrufe (`fetched/`) |
+| `am_research_builder.py` | Ruft Websites und GitHub-Releases aus dem Register ab, speichert Zeit, URL, SHA-256, Status |
+| `am_specialist_spec.json`, `am_validate.py` | Versionierte Spezifikation und ihre Offline-Prüfung |
+| `klipper_macro_check.py`, `wiki_tools.py` | Makro-Lint und Test-Rendering, Wiki-Validierung |
+| `agents/` | Koordinator, Firmware, Hardware/Toolchanger, Quellenprüfung, B2B |
+| `build_pages.py` | Baut die statische Seite für GitHub Pages inklusive Sitemap und Meta-Tags |
+| `tests/`, `.github/workflows/` | Offline-Tests, Prüfungen, Pages-Deploy, wöchentliche Recherche (nur Artefakt) |
+
+## Stand und Planung
+
+- [x] Wiki-Grundlage, erstes Kapitel Klipper-Makros/Jinja2 (de/en)
+- [x] Chat-Agent mit Zitatprüfung, eigener Schlüssel, Kostengrenzen
+- [x] Config-Editor mit Pin-Schutz
+- [x] Statische Seite mit SEO (Sitemap, hreflang, strukturierte Daten)
+- [ ] Weitere Kapitel: Klipper-Doku, RepRapFirmware, Marlin, Bambu Lab, Prusa
+- [ ] Chat im Netz (Server oder Browser-Variante)
+- [ ] Spenden- und Bezahlmodell, falls Nachfrage da ist
+
+Lizenz: noch nicht festgelegt.
