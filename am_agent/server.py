@@ -7,7 +7,10 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import wiki_tools
+from am_agent.env import load_env
 from am_agent.service import Agent, ROOT
+
+load_env(ROOT / ".env")  # Schluessel nur aus der Umgebung/.env, nie aus dem Browser
 
 STATIC = Path(__file__).resolve().parent / "static"
 

@@ -29,7 +29,7 @@ python3 am_research_builder.py --only klipper-releases   # echter Abruf
 ```
 ## Chat-Agent starten
 ```
-ant auth login            # oder ANTHROPIC_API_KEY setzen; der Schlüssel bleibt auf dem Server
+cp .env.example .env      # ANTHROPIC_API_KEY dort eintragen (.env ist nicht in Git); oder: ant auth login
 .venv/bin/uvicorn am_agent.server:app --port 8791
 ```
 Modell über `AM_MODEL` (Standard `claude-sonnet-5-5`). **Jede Frage kostet Geld auf deinem API-Konto.** Der Server hat noch kein Nutzungslimit: nicht öffentlich betreiben, bevor Kontingent und Kostendeckel (Spend-Limit in der Console) eingerichtet sind.

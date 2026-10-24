@@ -134,3 +134,20 @@ class Server(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class EnvLader(unittest.TestCase):
+    def test_laedt_ohne_zu_ueberschreiben(self):
+        import os, tempfile
+        from am_agent.env import load_env
+        with tempfile.TemporaryDirectory() as d:
+            f = Path(d) / ".env"
+            f.write_text("# kommentar\nAM_T1=eins\nAM_T2='zwei'\nAM_T3=\n\nkaputt\n", encoding="utf-8")
+            with mock.patch.dict(os.environ, {"AM_T2": "bleibt"}):
+                self.assertEqual(sorted(load_env(f)), ["AM_T1", "AM_T3"])
+                self.assertEqual(os.environ["AM_T1"], "eins")
+                self.assertEqual(os.environ["AM_T2"], "bleibt")
+                os.environ.pop("AM_T1"); os.environ.pop("AM_T3")
+
+    def test_env_nicht_in_git(self):
+        self.assertIn(".env", (ROOT / ".gitignore").read_text().splitlines())
