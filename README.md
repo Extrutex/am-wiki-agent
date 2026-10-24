@@ -35,7 +35,7 @@ cp .env.example .env      # ANTHROPIC_API_KEY dort eintragen (.env ist nicht in 
 ```
 Nutzer können im Chat einen eigenen Anthropic-Schlüssel eintragen (Header `X-Anthropic-Key`, nur pro Anfrage, nicht gespeichert oder geloggt, bleibt im Browser-Tab). Ohne Server-Schlüssel läuft der Chat dann nur damit.
 
-Modell über `AM_MODEL` (Standard `claude-sonnet-5-5`). **Jede Frage kostet Geld auf deinem API-Konto.** Der Server hat noch kein Nutzungslimit: nicht öffentlich betreiben, bevor Kontingent und Kostendeckel (Spend-Limit in der Console) eingerichtet sind.
+Modell über `AM_MODEL` (Standard `claude-sonnet-5-5`). **Jede Frage kostet Geld auf deinem API-Konto.** Grenzen für den Server-Schlüssel (Anfragen mit eigenem Nutzer-Schlüssel zählen nicht): Rate-Limit pro IP (`AM_RATE_PRO_MIN`, Standard 5; `AM_RATE_PRO_TAG`, Standard 40) und Tagesbudget an Tokens (`AM_TAGESBUDGET_TOKENS`, Standard 300000, UTC-Tag). Gezählt wird nach der Antwort, ein Aufruf kann das Budget also um seine eigene Größe überschreiten. Gespeichert werden nur Zähler in `.usage.json` (keine Fragen, Schlüssel oder IPs). Hinter einem Proxy `AM_TRUST_PROXY=1` setzen, damit `X-Forwarded-For` gilt (nur, wenn der Proxy ihn selbst setzt). `GET /api/health` zeigt `kontingent: frei|leer`. **Zusätzlich** in der Anthropic-Console ein Spend-Limit setzen, das ist die einzige harte Obergrenze.
 
 Der Workflow `Recherche` läuft manuell oder montags 05:00 UTC und legt das Ergebnis nur als Artefakt ab.
 
