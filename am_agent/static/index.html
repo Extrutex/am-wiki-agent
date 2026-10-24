@@ -7,22 +7,74 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <h1>AM-Wiki-Agent</h1>
-  <label>Sprache <select id="lang"><option value="de">Deutsch</option><option value="en">English</option></select></label>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div id="glow" aria-hidden="true"></div>
+<header class="bar">
+  <h1><span class="logo">AM</span> Wiki-Agent</h1>
+  <nav id="tabs" role="tablist">
+    <button role="tab" data-tab="chat" aria-selected="true">Chat</button>
+    <button role="tab" data-tab="cfg" aria-selected="false">Config-Editor</button>
+    <button role="tab" data-tab="wiki" aria-selected="false">Wiki</button>
+  </nav>
+  <label class="sel">Sprache <select id="lang"><option value="de">Deutsch</option><option value="en">English</option></select></label>
 </header>
+
+<details id="schluessel" class="card">
+  <summary>Eigener Anthropic-API-Schlüssel (optional)</summary>
+  <input id="key" type="password" autocomplete="off" placeholder="API-Schlüssel">
+  <p class="meta">Bleibt in diesem Browser-Tab (sessionStorage) und geht nur mit deiner Anfrage an diesen Server. Der Server speichert und loggt ihn nicht. Die Kosten trägt dein Anthropic-Konto.</p>
+</details>
+
 <main>
-  <section id="wiki"><h2>Wiki</h2><ul id="artikel"></ul><pre id="text" hidden></pre></section>
-  <section id="chat">
-    <h2>Frage</h2>
-    <details id="schluessel"><summary>Eigener Anthropic-API-Schlüssel (optional)</summary>
-      <input id="key" type="password" autocomplete="off" placeholder="API-Schlüssel">
-      <p class="meta">Der Schlüssel bleibt in diesem Browser-Tab (sessionStorage) und wird nur mit deiner Frage an diesen Server gesendet. Der Server speichert und loggt ihn nicht. Die Kosten trägt dein Anthropic-Konto.</p>
-    </details>
-    <div id="verlauf" aria-live="polite"></div>
-    <form id="form"><textarea id="frage" required maxlength="2000" rows="3"></textarea><button>Fragen</button></form>
+  <section id="tab-chat" class="tab">
+    <div class="card tilt">
+      <h2>Frage</h2>
+      <div id="verlauf" aria-live="polite"></div>
+      <form id="form"><textarea id="frage" required maxlength="2000" rows="3" placeholder="z. B. Warum sind params in Klipper-Makros Strings?"></textarea><button class="btn">Fragen</button></form>
+    </div>
+    <div class="card tilt viz" aria-label="Ablauf einer Antwort">
+      <h2>So antwortet der Agent</h2>
+      <ol class="flow" id="flow">
+        <li>Frage</li><li>Suche im Wiki</li><li>Claude (nur mit Treffern)</li><li>Zitatprüfung</li><li>Beleg + Einstufung</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="tab-cfg" class="tab" hidden>
+    <div class="card tilt">
+      <h2>printer.cfg bearbeiten</h2>
+      <p class="meta">Der Agent schlägt Änderungen vor. Nichts wird an den Drucker gesendet; du prüfst den Diff und übernimmst ihn selbst. Pins und Gerätekennungen sind gesperrt.</p>
+      <label>printer.cfg <input type="file" id="cfgdatei" accept=".cfg,.txt"></label>
+      <textarea id="cfg" rows="12" maxlength="200000" spellcheck="false" placeholder="Inhalt der printer.cfg einfügen"></textarea>
+      <label>Wunsch<textarea id="wunsch" rows="2" maxlength="2000" placeholder="z. B. Behandle die Makro-Parameter als float"></textarea></label>
+      <fieldset class="pinbox">
+        <legend>Pin-Änderungen (gesperrt)</legend>
+        <label class="chk"><input type="checkbox" id="pinfrei"> Ich fordere ausdrücklich eine Pin-Änderung an</label>
+        <div id="pinwarn" hidden>
+          <p class="warn">Falsche Pins können Hardware beschädigen (Kurzschluss, Heizer dauerhaft an). Gib zur Bestätigung ein: <b>Ich weiß was ich tue</b></p>
+          <input id="pinsatz" autocomplete="off" placeholder="Bestätigungssatz">
+        </div>
+      </fieldset>
+      <button class="btn" id="cfgsenden">Änderung vorschlagen</button>
+    </div>
+    <div class="card tilt" id="cfgergebnis" hidden>
+      <h2>Vorschlag</h2>
+      <div id="cfgtext"></div>
+      <div id="pinliste"></div>
+      <pre id="diff" class="diff"></pre>
+      <div class="row">
+        <button class="btn" id="kopieren">Neue cfg kopieren</button>
+        <button class="btn ghost" id="laden">Als Datei laden</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-wiki" class="tab" hidden>
+    <div class="card tilt"><h2>Wiki</h2><ul id="artikel"></ul></div>
+    <div class="card"><pre id="text" hidden></pre></div>
   </section>
 </main>
 <script src="app.js"></script>
+<script src="fx.js"></script>
 </body>
 </html>
