@@ -1,0 +1,22 @@
+# Cloudflare Worker für den Wiki-Chat. Einrichtung: siehe worker/README.md
+name = "am-wiki-agent"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+AM_MODEL = "claude-sonnet-5-5"
+AM_GRATIS_PRO_TAG = "5"
+AM_TAGESBUDGET_TOKENS = "300000"
+ERLAUBTE_ORIGINS = "https://extrutex.github.io,http://localhost:8000,http://127.0.0.1:8000"
+SPENDEN_URL = ""
+
+# Zähler für Gratisfragen und Tagesbudget. Die id stammt aus:
+#   npx wrangler kv namespace create NUTZUNG
+[[kv_namespaces]]
+binding = "NUTZUNG"
+id = "f92629dd53784f3181b2bf45458a590b"
+
+# Secrets (nicht hier eintragen, sondern mit wrangler setzen):
+#   npx wrangler secret put ANTHROPIC_API_KEY
+#   npx wrangler secret put AM_SALZ        # beliebige lange Zufallszeichenkette

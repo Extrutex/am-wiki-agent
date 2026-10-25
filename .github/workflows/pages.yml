@@ -24,6 +24,8 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: python am_validate.py
       - run: python build_pages.py site
+        env:
+          AM_CHAT_API: ${{ vars.AM_CHAT_API }}  # Adresse des Workers, als Repo-Variable gesetzt
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

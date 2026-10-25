@@ -5,3 +5,8 @@ __pycache__/
 .env
 site/
 .usage.json
+worker/node_modules/
+worker/.wrangler/
+worker/.dev.vars
+worker/src/wiki.json
+worker/test/suche_referenz.json
