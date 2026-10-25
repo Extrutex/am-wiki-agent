@@ -15,3 +15,17 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: python am_validate.py
       - run: python -m unittest discover -s tests -t .
+  worker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: npm ci
+        working-directory: worker
+      - run: npm test
+        working-directory: worker

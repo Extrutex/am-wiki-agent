@@ -66,7 +66,9 @@ python3 am_research_builder.py --list                    # Quellen anzeigen
 python3 am_research_builder.py --only klipper-releases   # echter Abruf (nur HTTPS-GET)
 ```
 
-**Statische Seite bauen** (GitHub Pages, nur Wiki, ohne Chat): `python build_pages.py` erzeugt `site/`.
+**Statische Seite bauen** (GitHub Pages): `python build_pages.py` erzeugt `site/`. Mit `AM_CHAT_API=<Worker-Adresse>` bekommt jede Seite das Chat-Fenster unten rechts.
+
+**Chat im Netz:** Der Chat auf der Seite läuft über einen Cloudflare Worker (`worker/`) mit deinem Anthropic-Schlüssel, 5 Gratisfragen pro Besucher und Tag, danach Spendenhinweis. Einrichtung in [worker/README.md](worker/README.md).
 
 ## Kostengrenzen
 
@@ -108,7 +110,8 @@ Gezählt wird nach der Antwort, ein Aufruf kann das Budget also um seine eigene 
 | `am_specialist_spec.json`, `am_validate.py` | Versionierte Spezifikation und ihre Offline-Prüfung |
 | `klipper_macro_check.py`, `wiki_tools.py` | Makro-Lint und Test-Rendering, Wiki-Validierung |
 | `agents/` | Koordinator, Firmware, Hardware/Toolchanger, Quellenprüfung, B2B |
-| `build_pages.py` | Baut die statische Seite für GitHub Pages inklusive Sitemap und Meta-Tags |
+| `build_pages.py` | Baut die statische Seite für GitHub Pages inklusive Sitemap, Meta-Tags und Chat-Fenster |
+| `worker/`, `build_worker.py` | Chat-API als Cloudflare Worker: Suche, Zitatprüfung, Gratisfragen, Tagesbudget |
 | `tests/`, `.github/workflows/` | Offline-Tests, Prüfungen, Pages-Deploy, wöchentliche Recherche (nur Artefakt) |
 
 ## Stand und Planung
@@ -118,7 +121,8 @@ Gezählt wird nach der Antwort, ein Aufruf kann das Budget also um seine eigene 
 - [x] Config-Editor mit Pin-Schutz
 - [x] Statische Seite mit SEO (Sitemap, hreflang, strukturierte Daten)
 - [ ] Weitere Kapitel: Klipper-Doku, RepRapFirmware, Marlin, Bambu Lab, Prusa
-- [ ] Chat im Netz (Server oder Browser-Variante)
+- [x] Chat im Netz: Cloudflare Worker, Chat-Fenster auf jeder Seite, Gratisfragen mit Spendenhinweis
+- [ ] Worker veröffentlichen und Spendenlink eintragen
 - [ ] Spenden- und Bezahlmodell, falls Nachfrage da ist
 
 Lizenz: noch nicht festgelegt.
